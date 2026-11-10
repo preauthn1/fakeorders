@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>新增页面</title>
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>" />
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css?v=<?=get_version() ?>" />
+    <style>
+        .layui-iconpicker .layui-anim {
+            bottom: 42px !important;
+            top: inherit !important;
+        }
+    </style>
+</head>
+<body>
+
+<form class="layui-form" action="">
+
+    <div class="mainBox">
+        <div class="main-container mr-5">
+
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="标题">标题</label>
+                <div class="layui-input-block">
+                    <input type="text" name="title" required lay-verify="required" value="" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="标识">标识</label>
+                <div class="layui-input-block">
+                    <input type="text" name="key" required lay-verify="required" value="" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="上级菜单">上级菜单</label>
+                <div class="layui-input-block">
+                    <div name="pid" id="pid" value="0" ></div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="url">url</label>
+                <div class="layui-input-block">
+                    <input type="text" name="href" value="" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="图标">图标</label>
+                <div class="layui-input-block">
+                    <input name="icon" id="icon" />
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="类型">类型</label>
+                <div class="layui-input-block">
+                    <div name="type" id="type" value="1" ></div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="排序">排序</label>
+                <div class="layui-input-block">
+                    <input type="number" name="weight" value="0" class="layui-input">
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit=""
+                    lay-filter="save">
+                <span data-lang="提交">提交</span>
+            </button>
+            <button type="reset" class="pear-btn pear-btn-md">
+                <span data-lang="重置">重置</span>
+            </button>
+        </div>
+    </div>
+</form>
+
+<script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+<script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+<script src="/app/admin/admin/js/permission.js"></script>
+<script>
+
+    // 接口
+    const INSERT_URL = "/app/admin/rule/insert";
+
+    // 图标选择
+    layui.use(["iconPicker"], function() {
+        layui.iconPicker.render({
+            elem: "#icon",
+            type: "fontClass",
+            page: false,
+        });
+    });
+
+    // 上级菜单
+    layui.use(["jquery", "xmSelect", "popup"], function() {
+        layui.$.ajax({
+            url: "/app/admin/rule/select?format=tree&type=0,1",
+            dataType: "json",
+            success: function (res) {
+                let value = layui.$("#pid").attr("value");
+                let initValue = value ? value.split(",") : [];
+                var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+                // 语言映射
+                var langMap = {
+                    'zh-CN': 'cn',
+                    'zh-TW': 'cn',
+                    'en': 'en'
+                };
+                var langCode = langMap[currentLang] || 'en';
+                layui.xmSelect.render({
+                    language: langCode,
+                    el: "#pid",
+                    name: "pid",
+                    initValue: initValue,
+                    tips: getText("无"),
+                    toolbar: {show: true, list: ["CLEAR"]},
+                    data: res.data,
+                    value: "0",
+                    model: {"icon":"hidden","label":{"type":"text"}},
+                    clickClose: true,
+                    radio: true,
+                    tree: {show: true,"strict":false,"clickCheck":true,"clickExpand":false},
+                });
+                if (res.code) {
+                    return layui.popup.failure(getText(res.msg));
+                }
+            }
+        });
+    });
+
+    // 菜单类型下拉列表
+    layui.use(["jquery", "xmSelect"], function() {
+        let value = layui.$("#type").attr("value");
+        let initValue = value ? value.split(",") : [];
+        var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+        // 语言映射
+        var langMap = {
+            'zh-CN': 'cn',
+            'zh-TW': 'cn',
+            'en': 'en'
+        };
+        var langCode = langMap[currentLang] || 'en';
+        layui.xmSelect.render({
+            language: langCode,
+            el: "#type",
+            name: "type",
+            initValue: initValue,
+            data: [
+                {"value":"0","name": getText("目录")},
+                {"value":"1","name": getText("菜单")},
+                {"value":"2","name": getText("权限")}
+            ],
+            value: "1",
+            model: {"icon":"hidden","label":{"type":"text"}},
+            clickClose: true,
+            radio: true,
+        })
+    });
+
+    // 表单提交事件
+    layui.use(["form", "popup"], function () {
+        layui.form.on("submit(save)", function (data) {
+            layui.$.ajax({
+                url: INSERT_URL,
+                type: "POST",
+                dateType: "json",
+                data: data.field,
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"), function () {
+                        parent.refreshTable();
+                        parent.layer.close(parent.layer.getFrameIndex(window.name));
+                    });
+                }
+            });
+            return false;
+        });
+    });
+
+</script>
+
+</body>
+</html>

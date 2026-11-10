@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="/app/admin/component/layui/css/layui.css?v=2.8.12"/>
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>"/>
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css?v=<?=get_version() ?>"/>
+</head>
+<body class="pear-container">
+<style>
+    .layui-input-block input {
+        width: 300px;
+    }
+</style>
+
+<div class="layui-card">
+    <div class="layui-card-body">
+
+        <div class="layui-tab layui-tab-brief">
+            <ul class="layui-tab-title">
+                <li class="layui-this" data-lang="基本信息">基本信息</li>
+                <li data-lang="安全设置">安全设置</li>
+                <li data-lang="谷歌秘钥">谷歌秘钥</li>
+            </ul>
+            <div class="layui-tab-content">
+
+                <!-- 基本信息 -->
+                <div class="layui-tab-item layui-show">
+
+                    <form class="layui-form" lay-filter="baseInfo">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="昵称">昵称</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="nickname" required lay-verify="required" data-lang="请输入昵称"
+                                       placeholder="请输入昵称"
+                                       autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="邮箱">邮箱</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="email" data-lang="请输入邮箱" placeholder="请输入邮箱" autocomplete="off"
+                                       class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="联系电话">联系电话</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="mobile" data-lang="请输入联系电话" placeholder="请输入联系电话"
+                                       autocomplete="off"
+                                       class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit=""
+                                        lay-filter="saveBaseInfo" data-lang="提交">
+                                    提交
+                                </button>
+                                <button type="reset" class="pear-btn pear-btn-md" data-lang="重置">
+                                    重置
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+
+                <div class="layui-tab-item">
+
+                    <form class="layui-form" action="">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="原始密码">原始密码</label>
+                            <div class="layui-input-block">
+                                <input type="password" name="old_password" required lay-verify="required"
+                                       data-lang="请输入原始密码" placeholder="请输入原始密码" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="新密码">新密码</label>
+                            <div class="layui-input-block">
+                                <input type="password" name="password" required lay-verify="required"
+                                       data-lang="请输入新密码" placeholder="请输入新密码" autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="确认新密码">确认新密码</label>
+                            <div class="layui-input-block">
+                                <input type="password" name="password_confirm" required lay-verify="required"
+                                       data-lang="请再次输入新密码" placeholder="请再次输入新密码" autocomplete="off"
+                                       class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit=""
+                                        lay-filter="savePassword" data-lang="提交">
+                                    提交
+                                </button>
+                                <button type="reset" class="pear-btn pear-btn-md" data-lang="重置">
+                                    重置
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="layui-tab-item">
+
+                    <form class="layui-form" action="">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="谷歌秘钥">谷歌秘钥</label>
+                            <div class="layui-input-block">
+                                <input type="text" id="google_secret" name="google_secret"
+                                       data-lang="请输入谷歌秘钥" placeholder="请输入谷歌秘钥" autocomplete="off"
+                                       class="layui-input">
+                                <div class="layui-word-aux" data-lang="如果想删除谷歌验证码，请输入空值并提交。">如果想删除谷歌验证码，请输入空值并提交。</div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item" id="google_code">
+                            <label class="layui-form-label" data-lang="谷歌验证码">谷歌验证码</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="code"
+                                       data-lang="请输入谷歌验证码" placeholder="请输入谷歌验证码" autocomplete="off"
+                                       class="layui-input">
+                                <div>
+                                    <img src="" alt="captcha" id="google_secret_url"
+                                         style="width: 100px; height: 100px;"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit=""
+                                        lay-filter="saveGoogleSecret" data-lang="提交">
+                                    提交
+                                </button>
+                                <button type="reset" class="pear-btn pear-btn-md" data-lang="重置">
+                                    重置
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+<script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+<script src="/app/admin/admin/js/permission.js"></script>
+<script>
+
+    layui.use(["form", "popup"], function () {
+        let form = layui.form;
+        let $ = layui.$;
+        $.ajax({
+            url: "/app/admin/account/info",
+            dataType: "json",
+            success: function (res) {
+                form.val("baseInfo", res.data);
+                if (res.data.google_secret == '') {
+                    $.ajax({
+                        url: "/app/admin/account/get_google_captcha",
+                        dataType: "json",
+                        success: function (ress) {
+                            $("#google_secret_url").attr("src", ress.data.url);
+                            $("#google_secret").val(ress.data.secret);
+                        }
+                    });
+                } else {
+                    $("#google_secret").val(res.data.google_secret);
+                    $("#google_code").hide();
+                }
+            }
+        });
+
+
+        form.on("submit(saveBaseInfo)", function (data) {
+            $.ajax({
+                url: "/app/admin/account/update",
+                dataType: "json",
+                type: "POST",
+                data: data.field,
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"));
+                }
+            });
+            return false;
+        });
+
+        form.on("submit(savePassword)", function (data) {
+            $.ajax({
+                url: "/app/admin/account/password",
+                dataType: "json",
+                type: "POST",
+                data: data.field,
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"));
+                }
+            });
+            return false;
+        });
+        form.on("submit(saveGoogleSecret)", function (data) {
+            $.ajax({
+                url: "/app/admin/account/google_secret",
+                dataType: "json",
+                type: "POST",
+                data: data.field,
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"));
+                }
+            });
+            return false;
+        });
+    });
+
+</script>
+
+</body>
+</html>

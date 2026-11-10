@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>home</title>
+    <link class="icon" rel="icon" type="image/png" href="">
+    <!-- 依 赖 样 式 -->
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>"/>
+    <!-- 加 载 样 式 -->
+    <link rel="stylesheet" href="/app/admin/admin/css/loader.css?v=<?=get_version() ?>"/>
+    <!-- 布 局 样 式 -->
+    <link rel="stylesheet" href="/app/admin/admin/css/admin.css?v=<?=get_version() ?>"/>
+    <!-- 重置样式 -->
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css?v=<?=get_version() ?>"/>
+</head>
+<!-- 结 构 代 码 -->
+<body class="layui-layout-body pear-admin">
+<!-- 布 局 框 架 -->
+<div class="layui-layout layui-layout-admin">
+    <!-- 顶 部 样 式 -->
+    <div class="layui-header">
+        <!-- 菜 单 顶 部 -->
+        <div class="layui-logo">
+            <!-- 图 标 -->
+            <img class="logo">
+            <!-- 标 题 -->
+            <span class="title"></span>
+        </div>
+        <!-- 顶 部 左 侧 功 能 -->
+        <ul class="layui-nav layui-layout-left">
+            <li class="collapse layui-nav-item"><a href="#" class="layui-icon layui-icon-shrink-right"></a></li>
+            <li class="refresh layui-nav-item"><a href="#" class="layui-icon layui-icon-refresh-1" loading=600></a></li>
+        </ul>
+        <!-- 多 系 统 菜 单 -->
+        <div id="control" class="layui-layout-control"></div>
+        <!-- 顶 部 右 侧 菜 单 -->
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item layui-hide-xs"><a href="#" class="menuSearch layui-icon layui-icon-search"></a>
+            </li>
+            <li class="layui-nav-item layui-hide-xs"><a href="#"
+                                                        class="fullScreen layui-icon layui-icon-screen-full"></a></li>
+            <li class="layui-nav-item layui-hide-xs message"></li>
+            <li class="layui-nav-item user">
+                <!-- 头 像 -->
+                <a class="layui-icon layui-icon-username" href="javascript:;"></a>
+                <!-- 功 能 菜 单 -->
+                <dl class="layui-nav-child">
+                    <dd><a user-menu-url="/app/admin/account/index" user-menu-id="10" user-menu-title="基本资料"
+                           data-lang="基本资料">基本资料</a>
+                    </dd>
+                    <dd><a href="javascript:void(0);" class="logout" data-lang="注销登录">注销登录</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item layui-hide-xs">
+                <a href="javascript:void(0);" class="language-switch">
+                    <i class="layui-icon layui-icon-translate"></i>
+                    <span id="switch-lang-text">语言</span>
+                </a>
+                <dl class="layui-nav-child" id="language-menu">
+                    <!-- 动态生成语言选项 -->
+                </dl>
+            </li>
+            <!-- 主 题 配 置 -->
+            <li class="layui-nav-item setting"><a href="#" class="layui-icon layui-icon-more-vertical"></a></li>
+        </ul>
+    </div>
+    <!-- 侧 边 区 域 -->
+    <div class="layui-side layui-bg-black">
+        <!-- 菜 单 顶 部 -->
+        <div class="layui-logo">
+            <!-- 图 标 -->
+            <img class="logo">
+            <!-- 标 题 -->
+            <a href="/"><span class="title"></span></a>
+        </div>
+        <!-- 菜 单 内 容 -->
+        <div class="layui-side-scroll">
+            <div id="sideMenu"></div>
+        </div>
+    </div>
+    <!-- 视 图 页 面 -->
+    <div class="layui-body">
+        <!-- 内 容 页 面 -->
+        <div id="content"></div>
+    </div>
+    <!-- 页脚 -->
+    <div class="layui-footer layui-text">
+                <span class="left">
+                    Released under the MIT license.
+                </span>
+        <span class="center"></span>
+    </div>
+    <!-- 遮 盖 层 -->
+    <div class="pear-cover"></div>
+    <!-- 加 载 动 画 -->
+    <div class="loader-main">
+        <!-- 动 画 对 象 -->
+        <div class="loader"></div>
+    </div>
+</div>
+<!-- 移 动 端 便 捷 操 作 -->
+<div class="pear-collapsed-pe collapse">
+    <a href="#" class="layui-icon layui-icon-shrink-right"></a>
+</div>
+<!-- 依 赖 脚 本 -->
+<script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+<script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+<!-- 框 架 初 始 化 -->
+<script>
+
+    // Admin
+    window.Admin = {
+        Account: {}
+    };
+
+    layui.use(["admin", "jquery", "popup", "drawer"], function () {
+        var $ = layui.$;
+        var admin = layui.admin;
+        var popup = layui.popup;
+        admin.setConfigType("json");
+        admin.setConfigPath("/app/admin/config/get");
+
+        admin.render();
+
+        // 登出逻辑
+        admin.logout(function () {
+            $.ajax({
+                url: "/app/admin/account/logout",
+                dataType: "json",
+                success: function (res) {
+                    if (res.code) {
+                        return popup.error(res.msg);
+                    }
+                    popup.success("注销成功", function () {
+                        location.reload();
+                    })
+                }
+            });
+            return false;
+        })
+        $.ajax({
+            url: "/app/admin/account/info",
+            dataType: 'json',
+            success: function (res) {
+                window.Admin.Account = res.data;
+            }
+        });
+        var language = {
+            "zh-CN": "简体中文",
+            "en": "English"
+        };
+        var languagePacks = {};
+
+        // 语言切换函数（可选）
+        function switchLanguage(lang) {
+            languagePacks = JSON.parse(localStorage.getItem("admin_language_packs"));
+            localStorage.setItem('admin_language', lang);
+            let currentDisplayLang = "语言";
+            // 查找当前语言对应的显示名称
+            $.each(language, function (index, langItem) {
+                if (langItem.lang == lang) {
+                    currentDisplayLang = langItem.title;
+                    return false; // 跳出循环
+                }
+            });
+            // 更新语言按钮显示文本
+            $('#switch-lang-text').text(currentDisplayLang);
+            // 重新应用语言
+            $('[data-lang]').each(function () {
+                var langKey = $(this).data('lang');
+                var text = getText(langKey);
+                if (this.tagName === 'INPUT' || this.tagName === 'TEXTAREA') {
+                    $(this).attr('placeholder', text);
+                } else {
+                    $(this).text(text);
+                }
+            });
+        }
+
+        /**
+         * 刷新本地语言包
+         */
+        function updateLanguagePacks() {
+            $.ajax({
+                url: "/app/admin/index/get_lang",
+                dataType: 'json',
+                success: function (res) {
+                    languagePacks = res.data.list;
+                    language = res.data.lang;
+                    localStorage.setItem("admin_language_packs", JSON.stringify(languagePacks))
+                    var lang = localStorage.getItem('admin_language');
+                    switchLanguage(lang ?? "zh-CN");
+                    // 生成语言切换菜单
+                    if (language) {
+                        generateLanguageMenu(language);
+                    }
+                }
+            });
+        }
+
+        // 动态生成语言切换菜单
+        function generateLanguageMenu(langData) {
+            var languageMenuHtml = '';
+            var defaultLang = 'zh-CN';
+            var currentDisplayLang = '语言';
+
+            // 查找默认语言
+            $.each(langData, function (index, langItem) {
+                if (langItem.is_default == 1) {
+                    defaultLang = langItem.lang;
+                    currentDisplayLang = langItem.title;
+                }
+            });
+
+            // 生成菜单项
+            $.each(langData, function (index, langItem) {
+                languageMenuHtml += '<dd><a href="javascript:void(0);" class="switch-lang" data-lang-code="' + langItem.lang + '">' + langItem.title + '</a></dd>';
+            });
+
+            // 插入到语言菜单中
+            $('#language-menu').html(languageMenuHtml);
+            // 设置当前语言或默认语言
+            var currentLang = localStorage.getItem('admin_language') || defaultLang;
+            switchLanguage(currentLang);
+        }
+
+        updateLanguagePacks();
+        // 语言切换事件绑定
+        $(document).on('click', '.switch-lang', function () {
+            var lang = $(this).data('lang-code');
+            switchLanguage(lang);
+            location.reload();
+        });
+    });
+
+</script>
+</body>
+</html>

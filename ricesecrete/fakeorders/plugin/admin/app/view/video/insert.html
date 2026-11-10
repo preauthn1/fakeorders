@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>新增页面</title>
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>"/>
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css?v=<?=get_version() ?>"/>
+</head>
+<body>
+
+<form class="layui-form" action="">
+    <div class="mainBox">
+        <div class="main-container mr-5">
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="语言">语言</label>
+                <div class="layui-input-block">
+                    <div name="lang" id="lang" value=""></div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="标题">标题</label>
+                <div class="layui-input-block">
+                    <input type="text" name="title" value="" required lay-verify="required" class="layui-input"
+                           data-lang="请输入标题" placeholder="请输入标题">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="收益">收益</label>
+                <div class="layui-input-block">
+                    <input type="text" name="profit" value="" class="layui-input"
+                           data-lang="请输入收益" placeholder="请输入收益">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="视频链接">视频链接</label>
+                <div class="layui-input-block">
+                    <div class="input-group">
+                        <input type="text" name="src" id="video_url" value="" class="layui-input"
+                               data-lang="请输入视频链接" placeholder="请输入视频链接">
+                        <span class="input-group-btn">
+                                    <button type="button" class="pear-btn pear-btn-primary pear-btn-md"
+                                            id="uploaderVideo">
+                                        <i class="layui-icon">&#xe67c;</i><span data-lang="上传">上传</span>
+                                    </button>
+                                </span>
+                        </input>
+                    </div>
+                    <div id="videoUploadProgress" style="display: none;margin-top: 15px;width: 390px">
+                        <div class="layui-progress" lay-filter="filter-progress">
+                            <div class="layui-progress-bar" lay-percent="0%"></div>
+                        </div>
+                        <div style="margin-top: 5px;">
+                            <small><span data-lang="正在上传">正在上传</span>：<span class="upload-status">0%</span></small>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="内容">内容</label>
+                <div class="layui-input-block">
+                    <textarea name="content" id="edit" cols="30" rows="10"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="状态">状态</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" id="status" lay-filter="status" lay-skin="switch" data-lang="启用|禁用"
+                           lay-text="启用|禁用"/>
+                    <input type="text" style="display:none" name="status" value="0" data-lang="启用|禁用" lay-text="启用|禁用"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit=""
+                    lay-filter="save">
+                <span data-lang="提交">提交</span>
+            </button>
+            <button type="reset" class="pear-btn pear-btn-md">
+                <span data-lang="重置">重置</span>
+            </button>
+        </div>
+    </div>
+
+</form>
+
+<script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+<script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+<script src="/app/admin/admin/js/permission.js"></script>
+<script>
+
+    // 相关接口
+    const INSERT_API = "/app/admin/video/insert";
+    const PRESIGNED_API = "/app/admin/upload/presigned";
+    // 字段 文件 url
+    layui.use(["upload", "layer", "popup", "util"], function () {
+        var upload = layui.upload;
+        var element = layui.element;
+        var layer = layui.layer;
+        let $ = layui.$;
+        let previewContainer = $("#flagPreview");
+        let previewImg = previewContainer.find('video');
+        // /app/admin/upload/presigned
+        $('#uploaderVideo').on('click', function () {
+            // 创建文件选择器
+            var fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'video/*';
+            fileInput.onchange = function (e) {
+                var file = e.target.files[0];
+                if (!file) return;
+
+                // 显示上传开始提示
+                layer.msg('开始上传视频，您可以继续填写其他内容', {icon: 6});
+                // 重置并显示进度条区域
+                $('#videoUploadProgress').show();
+                element.progress('filter-progress', '0%'); // 设置 50% 的进度
+                $('.upload-status').text('0%');
+
+                // 第一步：获取预签名URL
+                $.ajax({
+                    url: PRESIGNED_API,
+                    type: 'POST',
+                    data: {
+                        folder: 'video',
+                        filename: file.name
+                    },
+                    dataType: 'json',
+                    success: function (res) {
+                        if (res.code === 0) {
+                            // 第二步：使用预签名URL上传文件
+                            uploadFileWithProgress(file, res.data.base_url, res.data.url, res.data.key);
+                        } else {
+                            updateProgressStatus(false, res.msg || '获取上传链接失败');
+                            layer.msg(res.msg || '获取上传链接失败', {icon: 2});
+                        }
+                    },
+                    error: function () {
+                        updateProgressStatus(false, '获取上传链接请求失败');
+                        layer.msg('获取上传链接请求失败', {icon: 2});
+                    }
+                });
+            };
+
+            fileInput.click();
+        });
+
+        // 使用预签名URL上传文件并显示进度
+        function uploadFileWithProgress(file, baseUrl, presignedUrl, fileKey) {
+            // 创建XMLHttpRequest对象
+            var xhr = new XMLHttpRequest();
+            // 监听上传进度
+            xhr.upload.onprogress = function (e) {
+                if (e.lengthComputable) {
+                    var percent = Math.floor(e.loaded / e.total * 100);
+                    element.progress('filter-progress', percent + '%'); // 设置 50% 的进度
+                    $('.upload-status').text(percent + '%');
+                }
+            };
+
+            // 上传完成处理
+            xhr.onload = function () {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    // 上传成功
+                    var fileUrl = baseUrl + '/' + fileKey;
+
+                    // 设置表单值
+                    $("#video_url").val(fileUrl);
+
+                    updateProgressStatus(true, '上传完成');
+                    layer.msg('视频上传成功', {icon: 1});
+
+                    // 3秒后隐藏进度条
+                    setTimeout(function () {
+                        $('#videoUploadProgress').fadeOut(500);
+                    }, 3000);
+                } else {
+                    // 上传失败
+                    updateProgressStatus(false, '上传失败: ' + xhr.statusText);
+                    layer.msg('上传失败: ' + xhr.statusText, {icon: 2});
+                }
+            };
+
+            // 上传出错
+            xhr.onerror = function () {
+                updateProgressStatus(false, '网络错误，上传失败');
+                layer.msg('网络错误，上传失败', {icon: 2});
+            };
+
+            // 发起上传请求
+            xhr.open('PUT', presignedUrl, true);
+            xhr.send(file);
+        }
+
+        // 更新进度条状态
+        function updateProgressStatus(isSuccess, message) {
+            $('#videoUploadProgress small').html('<span class="' + (isSuccess ? 'text-success' : 'text-danger') + '">' + message + '</span>');
+        }
+    });
+    // 字段 内容类型 type
+    layui.use(["jquery", "xmSelect", "popup"], function () {
+        layui.$.ajax({
+            url: "/app/admin/dict/get/contenttype",
+            dataType: "json",
+            success: function (res) {
+                let value = layui.$("#type").attr("value");
+                let initValue = value ? value.split(",") : [];
+                layui.each(res.data, function (index, item) {
+                    if (item.name) {
+                        item.name = getText(item.name);
+                    }
+                });
+                var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+                // 语言映射
+                var langMap = {
+                    'zh-CN': 'cn',
+                    'zh-TW': 'cn',
+                    'en': 'en'
+                };
+                var langCode = langMap[currentLang] || 'en';
+                layui.xmSelect.render({
+                    language: langCode,
+                    el: "#type",
+                    name: "type",
+                    initValue: initValue,
+                    data: res.data,
+                    model: {"icon": "hidden", "label": {"type": "text"}},
+                    clickClose: true,
+                    radio: true,
+                    tips: getText("请选择"),
+                });
+                if (res.code) {
+                    layui.popup.failure(res.msg);
+                }
+            }
+        });
+    });
+    // 字段 语言类型 lang
+    layui.use(["jquery", "xmSelect", "popup"], function () {
+        layui.$.ajax({
+            url: "/app/admin/dict/options?table=lang&field=title&key=lang",
+            dataType: "json",
+            success: function (res) {
+                let value = layui.$("#lang").attr("value");
+                let initValue = value ? value.split(",") : [];
+                var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+                // 语言映射
+                var langMap = {
+                    'zh-CN': 'cn',
+                    'zh-TW': 'cn',
+                    'en': 'en'
+                };
+                var langCode = langMap[currentLang] || 'en';
+                layui.xmSelect.render({
+                    language: langCode,
+                    el: "#lang",
+                    name: "lang",
+                    initValue: initValue,
+                    data: res.data,
+                    model: {"icon": "hidden", "label": {"type": "text"}},
+                    clickClose: true,
+                    radio: true,
+                });
+                if (res.code) {
+                    layui.popup.failure(res.msg);
+                }
+            }
+        });
+    });
+    layui.use(['tinymce', 'layer', 'code', 'element'], function () {
+        var tinymce = layui.tinymce
+        layui.code();
+        // 获取当前语言设置
+        var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+        // 语言映射
+        var langMap = {
+            'zh-CN': 'zh_CN',
+            'zh-TW': 'zh_CN',
+            'en': 'en'
+        };
+        var langCode = langMap[currentLang] || 'en';
+        tinymce.render({
+            elem: "#edit",
+            height: 400,
+            language: langCode,
+            setup: function (editor) {
+                editor.on('change keyup paste undo redo', function () {
+                    // 同步编辑器内容到 textarea
+                    layui.$('textarea[name="content"]').val(editor.getContent());
+                });
+            }
+        });
+    });
+    // 字段 禁用 status
+    layui.use(["form"], function () {
+        layui.$("#status").attr("checked", layui.$('input[name="status"]').val() != 0);
+        layui.form.render();
+        layui.form.on("switch(status)", function (data) {
+            layui.$('input[name="status"]').val(this.checked ? 1 : 0);
+        });
+    })
+
+    //提交事件
+    layui.use(["form", "popup"], function () {
+        layui.form.on("submit(save)", function (data) {
+            layui.$.ajax({
+                url: INSERT_API,
+                type: "POST",
+                dateType: "json",
+                data: data.field,
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"), function () {
+                        parent.refreshTable();
+                        parent.layer.close(parent.layer.getFrameIndex(window.name));
+                    });
+                }
+            });
+            return false;
+        });
+    });
+
+</script>
+
+</body>
+</html>

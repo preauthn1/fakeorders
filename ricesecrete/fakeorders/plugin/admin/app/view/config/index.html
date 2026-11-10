@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>系统配置</title>
+    <link rel="stylesheet" href="/app/admin/component/layui/css/layui.css?v=2.8.12"/>
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>"/>
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css?v=<?=get_version() ?>"/>
+    <script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+    <script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+    <script src="/app/admin/admin/js/permission.js"></script>
+</head>
+<body class="pear-container">
+<div class="layui-card">
+    <div class="layui-card-body">
+
+        <div class="layui-tab layui-tab-brief">
+            <ul class="layui-tab-title">
+                <li class="layui-this" data-lang="基本信息">基本信息</li>
+                <li data-lang="用户端配置">用户端配置</li>
+                <li data-lang="充值提现">充值提现</li>
+                <li data-lang="出款钱包">出款钱包</li>
+            </ul>
+            <div class="layui-tab-content main-container">
+                <!-- 基本信息 -->
+                <div class="layui-tab-item layui-show">
+                    <form class="layui-form" lay-filter="baseInfo">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="网站名称">网站名称</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="title" required lay-verify="required" data-lang="请输入网站名称"
+                                       placeholder="请输入网站名称"
+                                       autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="管理端Icon">管理端Icon</label>
+                            <div class="layui-input-block">
+                                <img class="img-3" src=""/>
+                                <input type="text" style="display:none" name="icon" value="/app/admin/avatar.png"/>
+                                <button type="button" class="pear-btn pear-btn-primary pear-btn-sm" id="icon"
+                                        permission="app.admin.upload.avatar">
+                                    <i class="layui-icon layui-icon-upload"></i><span data-lang="上传图片">上传图片</span>
+                                </button>
+                                <button type="button" class="pear-btn pear-btn-primary pear-btn-sm"
+                                        id="attachment-choose-icon" permission="app.admin.upload.attachment">
+                                    <i class="layui-icon layui-icon-align-left"></i><span data-lang="选择图片">选择图片</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="管理端Logo">管理端Logo</label>
+                            <div class="layui-input-block">
+                                <img class="img-3" src=""/>
+                                <input type="text" style="display:none" name="image" value="/app/admin/avatar.png"/>
+                                <button type="button" class="pear-btn pear-btn-primary pear-btn-sm" id="image"
+                                        permission="app.admin.upload.avatar">
+                                    <i class="layui-icon layui-icon-upload"></i><span data-lang="上传图片">上传图片</span>
+                                </button>
+                                <button type="button" class="pear-btn pear-btn-primary pear-btn-sm"
+                                        id="attachment-choose-image" permission="app.admin.upload.attachment">
+                                    <i class="layui-icon layui-icon-align-left"></i><span data-lang="选择图片">选择图片</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="时区">时区</label>
+                            <div class="layui-input-block">
+                                <select name="timezone" class="layui-input">
+                                    <option value="Pacific/Wake">(GMT-12:00)</option>
+                                    <option value="Pacific/Apia">(GMT-11:00)</option>
+                                    <option value="Pacific/Honolulu">(GMT-10:00)</option>
+                                    <option value="Pacific/Gambier">(GMT-09:00)</option>
+                                    <option value="America/Los_Angeles">(GMT-08:00)</option>
+                                    <option value="America/Phoenix">(GMT-07:00)</option>
+                                    <option value="America/Managua">(GMT-06:00)</option>
+                                    <option value="America/Bogota">(GMT-05:00)</option>
+                                    <option value="America/Caracas">(GMT-04:00)</option>
+                                    <option value="America/St_Johns">(GMT-03:30)</option>
+                                    <option value="America/Argentina/Buenos_Aires">(GMT-03:00)</option>
+                                    <option value="America/Noronha">(GMT-02:00)</option>
+                                    <option value="Atlantic/Cape_Verde">(GMT-01:00)</option>
+                                    <option value="Europe/London">(GMT)</option>
+                                    <option value="Africa/Lagos">(GMT+01:00)</option>
+                                    <option value="Africa/Johannesburg">(GMT+02:00)</option>
+                                    <option value="Europe/Moscow">(GMT+03:00)</option>
+                                    <option value="Asia/Tehran">(GMT+03:30)</option>
+                                    <option value="Asia/Tbilisi">(GMT+04:00)</option>
+                                    <option value="Asia/Kabul">(GMT+04:30)</option>
+                                    <option value="Asia/Karachi">(GMT+05:00)</option>
+                                    <option value="Asia/Calcutta">(GMT+05:30)</option>
+                                    <option value="Asia/Katmandu">(GMT+05:45)</option>
+                                    <option value="Asia/Dhaka">(GMT+06:00)</option>
+                                    <option value="Asia/Rangoon">(GMT+06:30)</option>
+                                    <option value="Asia/Bangkok">(GMT+07:00)</option>
+                                    <option value="Asia/Hong_Kong">(GMT+08:00)</option>
+                                    <option value="Asia/Seoul">(GMT+09:00)</option>
+                                    <option value="Asia/Tokyo">(GMT+09:00)</option>
+                                    <option value="Australia/Adelaide">(GMT+09:30)</option>
+                                    <option value="Pacific/Guam">(GMT+10:00)</option>
+                                    <option value="Asia/Magadan">(GMT+11:00)</option>
+                                    <option value="Pacific/Fiji">(GMT+12:00)</option>
+                                    <option value="Pacific/Tongatapu">(GMT+13:00)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="版权">版权</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="copyright" data-lang="展示在页面底部的版权信息" placeholder="展示在页面底部的版权信息"
+                                       autocomplete="off"
+                                       class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="其它">其它</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="footer_txt" data-lang="其它展示在页面底部的内容" placeholder="其它展示在页面底部的内容"
+                                       autocomplete="off"
+                                       class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit=""
+                                        lay-filter="saveBaseInfo">
+                                    <span data-lang="提交">提交</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="layui-tab-item">
+                    <form class="layui-form" lay-filter="webInfo">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="网站名称">网站名称</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="title" required lay-verify="required" data-lang="请输入网站名称"
+                                       placeholder="请输入网站名称"
+                                       autocomplete="off" class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="网站Logo">网站Logo</label>
+                            <div class="layui-input-block">
+                                <img class="img-3" src=""/>
+                                <input type="text" style="display:none" name="logo" value="/app/admin/avatar.png"/>
+                                <button type="button" class="pear-btn pear-btn-primary pear-btn-sm" id="logo"
+                                        permission="app.admin.upload.avatar">
+                                    <i class="layui-icon layui-icon-upload"></i><span data-lang="上传图片">上传图片</span>
+                                </button>
+                                <button type="button" class="pear-btn pear-btn-primary pear-btn-sm"
+                                        id="attachment-choose-logo" permission="app.admin.upload.attachment">
+                                    <i class="layui-icon layui-icon-align-left"></i><span data-lang="选择图片">选择图片</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="注册类型">注册类型</label>
+                            <div class="layui-input-block">
+                                <input type="radio" name="reg_type" value="1" data-lang="手机号" title="手机号" checked>
+                                <input type="radio" name="reg_type" value="2" data-lang="邮箱" title="邮箱">
+                                <input type="radio" name="reg_type" value="0" data-lang="全部" title="全部">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="注册邮箱验证码">注册邮箱验证码</label>
+                            <div class="layui-input-block">
+                                <input type="checkbox" id="reg_code_email" lay-filter="reg_code_email" lay-skin="switch"
+                                       data-lang="启用|禁用" lay-text="启用|禁用"/>
+                                <input type="text" style="display:none" name="reg_code_email" value="0"
+                                       data-lang="启用|禁用" lay-text="启用|禁用"/>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="注册手机验证码">注册手机验证码</label>
+                            <div class="layui-input-block">
+                                <input type="checkbox" id="reg_code_mobile" lay-filter="reg_code_mobile"
+                                       lay-skin="switch"
+                                       data-lang="启用|禁用" lay-text="启用|禁用"/>
+                                <input type="text" style="display:none" name="reg_code_mobile" value="0"
+                                       data-lang="启用|禁用" lay-text="启用|禁用"/>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="验证码有效时长">验证码有效时长</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="reg_code_time" data-lang="验证码有效时长" placeholder="验证码有效时长"
+                                       class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="注册彩金">注册彩金</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="bonus_money" data-lang="注册赠送彩金" placeholder="注册赠送彩金"
+                                       class="layui-input">
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="内测码必填">内测码必填</label>
+                            <div class="layui-input-block">
+                                <input type="checkbox" id="invitation" lay-filter="invitation"
+                                       lay-skin="switch"
+                                       data-lang="启用|禁用" lay-text="启用|禁用"/>
+                                <input type="text" style="display:none" name="invitation" value="0"
+                                       data-lang="启用|禁用" lay-text="启用|禁用"/>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="客服代码">客服代码</label>
+                            <div class="layui-input-block">
+                                <textarea name="service" data-lang="客服代码" placeholder="客服代码"
+                                          class="layui-textarea"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit=""
+                                        lay-filter="saveWebInfo">
+                                    <span data-lang="提交">提交</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="layui-tab-item">
+                    <form class="layui-form" lay-filter="walletInfo">
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="允许提现未审核数量">允许提现未审核数量</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="withdraw_wait_num" required lay-verify="required"
+                                       data-lang="请输入允许提现未审核数量" placeholder="请输入允许提现未审核数量"
+                                       autocomplete="off" class="layui-input">
+                                <div class="layui-word-aux" data-lang="允许提现未审核数量，0表示不限制">允许提现未审核数量，0表示不限制</div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="团队充值返佣比例">团队充值返佣比例</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="recharge_rebates_rate" required lay-verify="required"
+                                       data-lang="请输入团队充值返佣比例" placeholder="请输入团队充值返佣比例"
+                                       autocomplete="off" class="layui-input">
+                                <div class="layui-word-aux">recharge_rebates_rate:<span data-lang="团队充值返佣比例说明"></span>
+                                    10 <span data-lang="表示"></span> 10%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <label class="layui-form-label" data-lang="充值返佣结算周期">充值返佣结算周期</label>
+                            <div class="layui-input-block">
+                                <input type="text" name="recharge_rebates_cycle" required lay-verify="required"
+                                       data-lang="请输入充值返佣结算周期" placeholder="请输入充值返佣结算周期"
+                                       autocomplete="off" class="layui-input">
+                                <div class="layui-word-aux">recharge_rebates_cycle:<span data-lang="充值返佣结算周期说明">团队充值返佣比例天</span>
+                                    10 <span data-lang="表示"></span>10 <span data-lang="天">天</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-form-item">
+                            <div class="layui-input-block">
+                                <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit=""
+                                        lay-filter="saveWalletInfo">
+                                    <span data-lang="提交">提交</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="layui-tab-item">
+                    <table id="data-table" lay-filter="data-table"></table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+    const SELECT_API = "/app/admin/config/get";
+    // 基础设置
+    layui.use(["upload", "layer", "popup"], function () {
+        let $ = layui.$;
+        let form = layui.form;
+
+        function initImg(id) {
+            let input = $("#" + id).prev();
+            input.prev().attr("src", input.val());
+            layui.$("#attachment-choose-" + id).on("click", function () {
+                parent.layer.open({
+                    type: 2,
+                    title: getText("选择附件"),
+                    content: "/app/admin/upload/attachment?ext=jpg,jpeg,png,gif,bmp",
+                    area: ["95%", "90%"],
+                    success: function (layero, index) {
+                        parent.layui.$("#layui-layer" + index).data("callback", function (data) {
+                            input.val(data.url).prev().attr("src", data.url);
+                        });
+                    }
+                });
+            });
+            layui.upload.render({
+                elem: "#" + id,
+                url: "/app/admin/upload/avatar",
+                acceptMime: "image/gif,image/jpeg,image/jpg,image/png",
+                done: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    this.item.prev().val(res.data.url).prev().attr("src", res.data.url);
+                }
+            });
+        }
+
+        initImg("icon");
+        initImg("image");
+        // 提交
+        form.on("submit(saveBaseInfo)", function (data) {
+            $.ajax({
+                url: "/app/admin/config/update",
+                dataType: "json",
+                type: "POST",
+                data: {logo: data.field},
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"));
+                }
+            });
+            return false;
+        });
+    });
+    // 用户前端
+    layui.use(["upload", "layer", "popup"], function () {
+        let $ = layui.$;
+        let form = layui.form;
+
+        function initImg(id) {
+            let input = $("#" + id).prev();
+            input.prev().attr("src", input.val());
+            layui.$("#attachment-choose-" + id).on("click", function () {
+                parent.layer.open({
+                    type: 2,
+                    title: getText("选择附件"),
+                    content: "/app/admin/upload/attachment?ext=jpg,jpeg,png,gif,bmp",
+                    area: ["95%", "90%"],
+                    success: function (layero, index) {
+                        parent.layui.$("#layui-layer" + index).data("callback", function (data) {
+                            input.val(data.url).prev().attr("src", data.url);
+                        });
+                    }
+                });
+            });
+            layui.upload.render({
+                elem: "#" + id,
+                url: "/app/admin/upload/avatar",
+                acceptMime: "image/gif,image/jpeg,image/jpg,image/png",
+                done: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    this.item.prev().val(res.data.url).prev().attr("src", res.data.url);
+                }
+            });
+        }
+
+        initImg("logo");
+        // 提交
+        form.on("submit(saveWebInfo)", function (data) {
+            $.ajax({
+                url: "/app/admin/config/update",
+                dataType: "json",
+                type: "POST",
+                data: {web: data.field},
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"));
+                }
+            });
+            return false;
+        });
+    });
+    // 用户前端
+    layui.use(["upload", "layer", "popup"], function () {
+        let $ = layui.$;
+        let form = layui.form;
+        // 提交
+        form.on("submit(saveWalletInfo)", function (data) {
+            $.ajax({
+                url: "/app/admin/config/update",
+                dataType: "json",
+                type: "POST",
+                data: {wallet: data.field},
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"));
+                }
+            });
+            return false;
+        });
+    });
+
+    layui.use(["form"], function () {
+        let form = layui.form;
+        let $ = layui.$;
+        $.ajax({
+            url: "/app/admin/config/get",
+            dataType: "json",
+            success: function (res) {
+                if (res.code) {
+                    return layui.popup.failure(getText(res.msg));
+                }
+                let data = res.data;
+                form.val("baseInfo", data.logo);
+                $("#image").prev().val(data.logo.image).prev().attr("src", data.logo.image);
+                form.val("webInfo", data.web)
+                $("#logo").prev().val(data.web.logo).prev().attr("src", data.web.logo);
+                // 字段 reg_code_email
+                layui.$("#reg_code_email").attr("checked", layui.$('input[name="reg_code_email"]').val() != 0);
+                layui.form.render();
+                layui.form.on("switch(reg_code_email)", function (data) {
+                    layui.$('input[name="reg_code_email"]').val(this.checked ? 1 : 0);
+                });
+                // 字段 reg_code_mobile
+                layui.$("#reg_code_mobile").attr("checked", layui.$('input[name="reg_code_mobile"]').val() != 0);
+                layui.form.render();
+                layui.form.on("switch(reg_code_mobile)", function (data) {
+                    layui.$('input[name="reg_code_mobile"]').val(this.checked ? 1 : 0);
+                });
+                // 字段 invitation
+                layui.$("#invitation").attr("checked", layui.$('input[name="invitation"]').val() != 0);
+                layui.form.render();
+                layui.form.on("switch(invitation)", function (data) {
+                    layui.$('input[name="invitation"]').val(this.checked ? 1 : 0);
+                });
+                form.val("walletInfo", data.wallet)
+
+                layui.use(["table"], function () {
+                    let table = layui.table;
+                    // 表头参数
+                    let cols = [
+                        {
+                            title: getText("币种"),
+                            field: "coinName",
+                            width: 100,
+                        }, {
+                            title: getText("链名"),
+                            field: "chain",
+                            width: 100,
+                        }, {
+                            title: getText("地址"),
+                            field: "address",
+                            width: 400,
+                        }, {
+                            title: getText("余额"),
+                            field: "balance",
+                        }, {
+                            title: 'gas' + getText("余额"),
+                            field: "gasBalance",
+                        }, {
+                            title: getText("状态"),
+                            field: "status",
+                            width: 100,
+                            templet: function (d) {
+                                if (d['status'] == 1) {
+                                    return getText('启用');
+                                }
+                                return getText('禁用');
+                            }
+                        }
+                    ];
+
+                    // 渲染表格
+                    function render() {
+                        table.render({
+                            elem: "#data-table",
+                            url: SELECT_API,
+                            page: false,
+                            parseData: function (res) {
+                                return {
+                                    "code": res.code,
+                                    "msg": res.msg,
+                                    "count": res.data.total,
+                                    "data": res.data.withdrawal_list
+                                };
+                            },
+                            cols: [cols],
+                            skin: "line",
+                            size: "lg",
+                            autoSort: false,
+                            text: {
+                                none: getText("暂无数据")
+                            },
+                            done: function () {
+                                layer.photos({photos: 'div[lay-id="data-table"]', anim: 5});
+                            }
+                        });
+                    }
+
+                    render();
+                })
+            }
+        });
+
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>更新页面</title>
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>"/>
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css?v=<?=get_version() ?>"/>
+</head>
+<body>
+
+<form class="layui-form">
+    <div class="mainBox">
+        <div class="main-container mr-5">
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="名称">名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="type" value="0" style="display: none">
+                    <input type="text" name="name" value="" required lay-verify="required" class="layui-input" data-lang="请输入名称" placeholder="请输入名称">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="图片">图片</label>
+                <div class="layui-input-block">
+                    <input type="text" style="display:none" name="icon" value=""/>
+                    <button type="button" class="pear-btn pear-btn-primary pear-btn-sm" id="icon">
+                        <i class="layui-icon layui-icon-upload"></i><span data-lang="上传文件">上传文件</span>
+                    </button>
+                    <button type="button" class="pear-btn pear-btn-danger pear-btn-sm" id="deleteIcon"
+                            style="display:none;margin-left: 10px;">
+                        <i class="layui-icon layui-icon-delete"></i><span data-lang="删除图片">删除图片</span>
+                    </button>
+                    <div id="iconPreview" style="margin-top: 10px;display:none;">
+                        <img src="" style="max-width: 200px;max-height: 200px;border: 1px solid #eee;padding: 5px;">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="链接">链接</label>
+                <div class="layui-input-block">
+                    <input type="text" name="link" value="" class="layui-input" data-lang="请输入链接" placeholder="请输入链接">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="排序">排序</label>
+                <div class="layui-input-block">
+                    <input type="text" name="sort" value="" class="layui-input" data-lang="请输入排序" placeholder="请输入排序">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="状态">状态</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" id="status" lay-filter="status" lay-skin="switch" data-lang="启用|禁用" lay-text="启用|禁用"/>
+                    <input type="text" style="display:none" name="status" value="0" data-lang="启用|禁用" lay-text="启用|禁用"/>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit="" lay-filter="save">
+                <span data-lang="提交">提交</span>
+            </button>
+            <button type="reset" class="pear-btn pear-btn-md">
+                <span data-lang="重置">重置</span>
+            </button>
+        </div>
+    </div>
+
+</form>
+
+<script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+<script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+<script src="/app/admin/admin/js/permission.js"></script>
+<script>
+
+    // 相关接口
+    const PRIMARY_KEY = "id";
+    const SELECT_API = "/app/admin/contactUs/select" + location.search;
+    const UPDATE_API = "/app/admin/contactUs/update";
+    layui.use(["upload", "layer", "popup", "util"], function () {
+        let $ = layui.$;
+        let input = $("#icon").prev();
+        let deleteBtn = $("#deleteIcon");
+        let previewContainer = $("#iconPreview");
+        let previewImg = previewContainer.find('img');
+
+        // 初始化显示
+        function initDisplay() {
+            let imgUrl = input.val();
+            if (imgUrl) {
+                previewImg.attr('src', imgUrl);
+                previewContainer.show();
+                deleteBtn.show();
+            } else {
+                previewContainer.hide();
+                deleteBtn.hide();
+            }
+        }
+
+        // 初始调用
+        initDisplay();
+
+        // 上传功能
+        layui.upload.render({
+            elem: "#icon",
+            url: "/app/admin/upload/file",
+            data: {
+                folder: "/hkxa/pay/"
+            },
+            accept: "file",
+            field: "__file__",
+            done: function (res) {
+                if (res.code) return layui.popup.failure(getText(res.msg));
+                $('input[name="icon"]').val(res.data.url);
+                initDisplay(); // 更新显示
+                parent.refreshTable();
+            }
+        });
+        // 删除功能
+        deleteBtn.on('click', function () {
+            layui.layer.confirm(getText('确定要删除这张图片吗？'), function (index) {
+                input.val('');
+                initDisplay(); // 更新显示
+                layui.layer.close(index);
+            });
+        });
+    });
+    // 获取数据库记录
+    layui.use(["form", "util", "popup"], function () {
+        let $ = layui.$;
+        $.ajax({
+            url: SELECT_API,
+            dataType: "json",
+            success: function (res) {
+
+                // 给表单初始化数据
+                layui.each(res.data[0], function (key, value) {
+                    let obj = $('*[name="' + key + '"]');
+                    if (key === "password") {
+                        obj.attr("placeholder", getText("不更新密码请留空"));
+                        return;
+                    }
+                    if (typeof obj[0] === "undefined" || !obj[0].nodeName) return;
+                    if (obj[0].nodeName.toLowerCase() === "textarea") {
+                        obj.val(layui.util.escape(value));
+                    } else {
+                        obj.attr("value", value);
+                    }
+                });
+                // 字段 禁用 status
+                layui.use(["form"], function () {
+                    layui.$("#status").attr("checked", layui.$('input[name="status"]').val() != 0);
+                    layui.form.render();
+                    layui.form.on("switch(status)", function (data) {
+                        layui.$('input[name="status"]').val(this.checked ? 1 : 0);
+                    });
+                })
+
+                // ajax产生错误
+                if (res.code) {
+                    layui.popup.failure(res.msg);
+                }
+
+            }
+        });
+    });
+
+    //提交事件
+    layui.use(["form", "popup"], function () {
+        layui.form.on("submit(save)", function (data) {
+            data.field[PRIMARY_KEY] = layui.url().search[PRIMARY_KEY];
+            layui.$.ajax({
+                url: UPDATE_API,
+                type: "POST",
+                dateType: "json",
+                data: data.field,
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"), function () {
+                        parent.refreshTable();
+                        parent.layer.close(parent.layer.getFrameIndex(window.name));
+                    });
+                }
+            });
+            return false;
+        });
+    });
+
+</script>
+
+</body>
+
+</html>

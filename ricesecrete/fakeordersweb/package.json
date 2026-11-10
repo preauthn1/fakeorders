@@ -1,0 +1,50 @@
+{
+  "name": "tt",
+  "version": "0.0.34",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --fix",
+    "format": "prettier --write src/",
+    "cap:build": "npm run build && npx cap sync",
+    "cap:android": "npm run cap:build && npx cap open android",
+    "cap:ios": "npm run cap:build && npx cap open ios",
+    "cap:sync": "npx cap sync",
+    "cap:run:android": "npm run cap:build && npx cap run android",
+    "cap:run:ios": "npm run cap:build && npx cap run ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.2",
+    "@capacitor/cli": "^7.4.2",
+    "@capacitor/core": "^7.4.2",
+    "@capacitor/ios": "^7.4.2",
+    "@metamask/detect-provider": "^2.0.0",
+    "@tanstack/vue-query": "^5.83.0",
+    "axios": "^1.11.0",
+    "less": "^4.4.0",
+    "pinia": "^3.0.3",
+    "qrcode": "^1.5.4",
+    "vant": "^4.9.21",
+    "viem": "^2.33.1",
+    "vue": "^3.5.18",
+    "vue-i18n": "^9.14.5",
+    "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "@vitejs/plugin-vue": "^6.0.0",
+    "@vue/eslint-config-prettier": "^10.2.0",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.29.0",
+    "eslint-plugin-vue": "~10.2.0",
+    "globals": "^16.2.0",
+    "postcss": "^8.5.6",
+    "prettier": "3.5.3",
+    "tailwindcss": "^3.4.17",
+    "vite": "^7.0.0",
+    "vite-plugin-vue-devtools": "^7.7.7"
+  }
+}

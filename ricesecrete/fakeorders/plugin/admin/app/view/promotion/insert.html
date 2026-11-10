@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>新增页面</title>
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>"/>
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css?v=<?=get_version() ?>"/>
+</head>
+<body>
+
+<form class="layui-form" action="">
+
+    <div class="mainBox">
+        <div class="main-container mr-5">
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="用户">用户</label>
+                <div class="layui-input-block">
+                    <div name="user_id" id="user_id" value=""></div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="平台">平台</label>
+                <div class="layui-input-block">
+                    <select name="platform" lay-verify="required" class="layui-select">
+                        <option value="facebook">facebook</option>
+                        <option value="kwai">kwai</option>
+                        <option value="tiktok">tiktok</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="像素">像素</label>
+                <div class="layui-input-block">
+                    <input type="text" name="pix" value="" required lay-verify="required" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">Token</label>
+                <div class="layui-input-block">
+                    <input type="text" name="access_token" value="" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="测试事件">测试事件</label>
+                <div class="layui-input-block">
+                    <input type="text" name="test_event_code" value="" class="layui-input">
+                    <div class="layui-form-mid layui-word-aux" data-lang="测试用,对接完后请删除">测试用,对接完后请删除</div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="域名">域名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="domain" value="" class="layui-input">
+                    <div class="layui-form-mid layui-word-aux">https://www.hkxahxcoin.com/</div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="是否默认">是否默认</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" id="is_default" lay-filter="is_default" lay-skin="switch" lay-text="启用|禁用"
+                           data-lang="启用|禁用"/>
+                    <input type="text" style="display:none" name="is_default" value="0" lay-text="启用|禁用"/>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="状态">状态</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" id="status" lay-filter="status" lay-skin="switch" lay-text="启用|禁用"
+                           data-lang="启用|禁用"/>
+                    <input type="text" style="display:none" name="status" value="0" lay-text="启用|禁用"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit=""
+                    lay-filter="save">
+                <span data-lang="提交">提交</span>
+            </button>
+            <button type="reset" class="pear-btn pear-btn-md">
+                <span data-lang="重置">重置</span>
+            </button>
+        </div>
+    </div>
+
+</form>
+
+<script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+<script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+<script src="/app/admin/admin/js/permission.js"></script>
+<script>
+
+    // 相关接口
+    const INSERT_API = "/app/admin/promotion/insert";
+    // 用户id
+    layui.use(["jquery", "xmSelect", "popup"], function () {
+        layui.$.ajax({
+            url: '/app/admin/user/select',
+            dataType: "json",
+            success: function (res) {
+                if (res.code === 0) {
+                    let initformattedData = res.data.map(item => {
+                        return {
+                            value: item.id,
+                            name: (item.mobile_code ? '(' + item.mobile_code + ')' : '') + item.username
+                        };
+                    });
+                    // 初始化 xmSelect
+                    var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+                    // 语言映射
+                    var langMap = {
+                        'zh-CN': 'cn',
+                        'zh-TW': 'cn',
+                        'en': 'en'
+                    };
+                    var langCode = langMap[currentLang] || 'en';
+                    layui.xmSelect.render({
+                        language: langCode,
+                        el: "#user_id",
+                        name: "user_id",
+                        initValue: [],
+                        data: [], // 初始数据为空
+                        model: {"icon": "hidden", "label": {"type": "text"}},
+                        clickClose: true,
+                        radio: true,
+                        clearable: true,
+                        filterable: true, // 启用过滤功能
+                        toolbar: {
+                            show: true,
+                            list: ['ALL', 'CLEAR', 'REVERSE']
+                        },
+                        remoteSearch: true,
+                        remoteMethod: function (val, cb, show) {
+                            // 如果搜索关键词为空，不执行搜索
+                            if (!val) {
+                                return cb(initformattedData);
+                            }
+                            let username = ['like', val];
+                            // 显示加载状态
+                            // 执行远程搜索
+                            layui.$.ajax({
+                                url: '/app/admin/user/select',
+                                data: {username},
+                                dataType: "json",
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        let formattedData = res.data.map(item => {
+                                            return {
+                                                value: item.id,
+                                                name: (item.mobile_code ? '(' + item.mobile_code + ')' : '') + item.username
+                                            };
+                                        });
+                                        cb(formattedData);
+                                    } else {
+                                        cb(initformattedData);
+                                    }
+                                },
+                                error: function () {
+                                    cb(initformattedData);
+                                }
+                            });
+                        },
+                    });
+                }
+            }
+        });
+    });
+    // 字段 禁用 status
+    layui.use(["form"], function () {
+        layui.$("#status").attr("checked", layui.$('input[name="status"]').val() != 0);
+        layui.form.render();
+        layui.form.on("switch(status)", function (data) {
+            layui.$('input[name="status"]').val(this.checked ? 1 : 0);
+        });
+        layui.$("#is_default").attr("checked", layui.$('input[name="is_default"]').val() != 0);
+        layui.form.render();
+        layui.form.on("switch(is_default)", function (data) {
+            layui.$('input[name="is_default"]').val(this.checked ? 1 : 0);
+        });
+    })
+
+    //提交事件
+    layui.use(["form", "popup"], function () {
+        layui.form.on("submit(save)", function (data) {
+            layui.$.ajax({
+                url: INSERT_API,
+                type: "POST",
+                dateType: "json",
+                data: data.field,
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"), function () {
+                        parent.refreshTable();
+                        parent.layer.close(parent.layer.getFrameIndex(window.name));
+                    });
+                }
+            });
+            return false;
+        });
+    });
+
+</script>
+
+</body>
+</html>

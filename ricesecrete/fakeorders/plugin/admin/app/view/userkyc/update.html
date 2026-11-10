@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>更新页面</title>
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>"/>
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css?v=<?=get_version() ?>"/>
+</head>
+<body>
+
+<form class="layui-form">
+    <div class="mainBox">
+        <div class="main-container mr-5">
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="用户id">用户id</label>
+                <div class="layui-input-block">
+                    <input type="text" name="user_id" value="" disabled class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="姓">姓</label>
+                <div class="layui-input-block">
+                    <input type="text" name="surname" value="" required lay-verify="required" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="名">名</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" value="" required lay-verify="required" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="证件号">证件号</label>
+                <div class="layui-input-block">
+                    <input type="text" name="id_number" value="" required lay-verify="required" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="证件照正面">证件照正面</label>
+                <div class="layui-input-block">
+                    <input type="text" style="display:none" name="front" value=""/>
+                    <button type="button" class="pear-btn pear-btn-primary pear-btn-sm" id="front">
+                        <i class="layui-icon layui-icon-upload"></i><span data-lang="上传文件">上传文件</span>
+                    </button>
+                    <button type="button" class="pear-btn pear-btn-danger pear-btn-sm" id="deleteFront"
+                            style="display:none;margin-left: 10px;">
+                        <i class="layui-icon layui-icon-delete"></i><span data-lang="删除图片">删除图片</span>
+                    </button>
+                    <div id="frontPreview" style="margin-top: 10px;display:none;">
+                        <img src="" style="max-width: 200px;max-height: 200px;border: 1px solid #eee;padding: 5px;">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="证件照背面">证件照背面</label>
+                <div class="layui-input-block">
+                    <input type="text" style="display:none" name="back" value=""/>
+                    <button type="button" class="pear-btn pear-btn-primary pear-btn-sm" id="back">
+                        <i class="layui-icon layui-icon-upload"></i><span data-lang="上传文件">上传文件</span>
+                    </button>
+                    <button type="button" class="pear-btn pear-btn-danger pear-btn-sm" id="deleteBack"
+                            style="display:none;margin-left: 10px;">
+                        <i class="layui-icon layui-icon-delete"></i><span data-lang="删除图片">删除图片</span>
+                    </button>
+                    <div id="backPreview" style="margin-top: 10px;display:none;">
+                        <img src="" style="max-width: 200px;max-height: 200px;border: 1px solid #eee;padding: 5px;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="手持证件照">手持证件照</label>
+                <div class="layui-input-block">
+                    <input type="text" style="display:none" name="handheld" value=""/>
+                    <button type="button" class="pear-btn pear-btn-primary pear-btn-sm" id="handheld">
+                        <i class="layui-icon layui-icon-upload"></i><span data-lang="上传文件">上传文件</span>
+                    </button>
+                    <button type="button" class="pear-btn pear-btn-danger pear-btn-sm" id="deleteHandheld"
+                            style="display:none;margin-left: 10px;">
+                        <i class="layui-icon layui-icon-delete"></i><span data-lang="删除图片">删除图片</span>
+                    </button>
+                    <div id="handheldPreview" style="margin-top: 10px;display:none;">
+                        <img src="" style="max-width: 200px;max-height: 200px;border: 1px solid #eee;padding: 5px;">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="状态">状态</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="status" value="1" title="审核中" data-lang="审核中" checked/>
+                    <input type="radio" name="status" value="2" title="已认证" data-lang="已认证"/>
+                    <input type="radio" name="status" value="3" title="认证失败" data-lang="认证失败"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit="" lay-filter="save">
+                <span data-lang="提交">提交</span>
+            </button>
+            <button type="reset" class="pear-btn pear-btn-md">
+                <span data-lang="重置">重置</span>
+            </button>
+        </div>
+    </div>
+
+</form>
+
+<script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+<script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+<script src="/app/admin/admin/js/permission.js"></script>
+<script>
+
+    // 相关接口
+    const PRIMARY_KEY = "id";
+    const SELECT_API = "/app/admin/userkyc/select" + location.search;
+    const UPDATE_API = "/app/admin/userKyc/update";
+    // 获取数据库记录
+    layui.use(["form", "util", "popup"], function () {
+        let $ = layui.$;
+        $.ajax({
+            url: SELECT_API,
+            dataType: "json",
+            success: function (res) {
+
+                // 给表单初始化数据
+                layui.each(res.data[0], function (key, value) {
+                    let obj = $('*[name="' + key + '"]');
+                    if (key === "password") {
+                        obj.attr("placeholder", getText("不更新密码请留空"));
+                        return;
+                    }
+                    if (typeof obj[0] === "undefined" || !obj[0].nodeName) return;
+                    if (obj[0].nodeName.toLowerCase() === "textarea") {
+                        obj.val(layui.util.escape(value));
+                    } else if (obj[0].nodeName.toLowerCase() === "input" && obj.attr("type") === "radio") {
+                        // 处理单选按钮的初始化选中状态
+                        obj.each(function () {
+                            if ($(this).val() == value) {
+                                $(this).prop("checked", true);
+                            }
+                        });
+                    } else {
+                        obj.attr("value", value);
+                    }
+                });
+                layui.form.render();
+                layui.use(["upload", "layer", "popup", "util"], function () {
+                    let $ = layui.$;
+
+                    // 统一的图片上传处理函数
+                    function initImageUpload(config) {
+                        let {
+                            inputSelector,
+                            uploadBtnSelector,
+                            deleteBtnSelector,
+                            previewContainerSelector,
+                            fieldName
+                        } = config;
+
+                        let input = $(inputSelector);
+                        let deleteBtn = $(deleteBtnSelector);
+                        let previewContainer = $(previewContainerSelector);
+                        let previewImg = previewContainer.find('img');
+
+                        // 初始化显示
+                        function initDisplay() {
+                            let imgUrl = input.val();
+                            if (imgUrl) {
+                                previewImg.attr('src', imgUrl);
+                                previewContainer.show();
+                                deleteBtn.show();
+                            } else {
+                                previewContainer.hide();
+                                deleteBtn.hide();
+                            }
+                        }
+
+                        // 初始调用
+                        initDisplay();
+
+                        // 上传功能
+                        layui.upload.render({
+                            elem: uploadBtnSelector,
+                            url: "/app/admin/upload/insert",
+                            data: {
+                                category: 1
+                            },
+                            accept: "file",
+                            field: "__file__",
+                            done: function (res) {
+                                if (res.code) return layui.popup.failure(getText(res.msg));
+                                input.val(res.data.url);
+                                initDisplay(); // 更新显示
+                                parent.refreshTable();
+                            },
+                            error: function () {
+                                layui.popup.failure(getText('上传失败'));
+                            }
+                        });
+
+                        // 删除功能
+                        deleteBtn.on('click', function () {
+                            layui.layer.confirm(getText('确定要删除这张图片吗？'), function (index) {
+                                input.val('');
+                                initDisplay(); // 更新显示
+                                layui.layer.close(index);
+                            });
+                        });
+
+                        return {
+                            initDisplay: initDisplay
+                        };
+                    }
+
+                    // 初始化三个图片上传组件
+                    // 证件照正面
+                    initImageUpload({
+                        inputSelector: 'input[name="front"]',
+                        uploadBtnSelector: "#front",
+                        deleteBtnSelector: "#deleteFront",
+                        previewContainerSelector: "#frontPreview",
+                        fieldName: "front"
+                    });
+
+                    // 证件照背面
+                    initImageUpload({
+                        inputSelector: 'input[name="back"]',
+                        uploadBtnSelector: "#back",
+                        deleteBtnSelector: "#deleteBack",
+                        previewContainerSelector: "#backPreview",
+                        fieldName: "back"
+                    });
+
+                    // 手持证件照
+                    initImageUpload({
+                        inputSelector: 'input[name="handheld"]',
+                        uploadBtnSelector: "#handheld",
+                        deleteBtnSelector: "#deleteHandheld",
+                        previewContainerSelector: "#handheldPreview",
+                        fieldName: "handheld"
+                    });
+                });
+                // ajax产生错误
+                if (res.code) {
+                    layui.popup.failure(res.msg);
+                }
+
+            }
+        });
+    });
+
+    //提交事件
+    layui.use(["form", "popup"], function () {
+        layui.form.on("submit(save)", function (data) {
+            data.field[PRIMARY_KEY] = layui.url().search[PRIMARY_KEY];
+            layui.$.ajax({
+                url: UPDATE_API,
+                type: "POST",
+                dateType: "json",
+                data: data.field,
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"), function () {
+                        parent.refreshTable();
+                        parent.layer.close(parent.layer.getFrameIndex(window.name));
+                    });
+                }
+            });
+            return false;
+        });
+    });
+
+</script>
+
+</body>
+
+</html>

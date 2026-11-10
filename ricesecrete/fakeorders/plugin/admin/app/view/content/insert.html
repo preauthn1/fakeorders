@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>新增页面</title>
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>"/>
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css?v=<?=get_version() ?>"/>
+</head>
+<body>
+
+<form class="layui-form" action="">
+    <div class="mainBox">
+        <div class="main-container mr-5">
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="类型">类型</label>
+                <div class="layui-input-block">
+                    <div name="type" id="type" value=""></div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="语言">语言</label>
+                <div class="layui-input-block">
+                    <div name="lang" id="lang" value=""></div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="标题">标题</label>
+                <div class="layui-input-block">
+                    <input type="text" name="title" value="" required lay-verify="required" class="layui-input"
+                           data-lang="请输入标题" placeholder="请输入标题">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="内容">内容</label>
+                <div class="layui-input-block">
+                    <textarea name="content" id="edit" cols="30" rows="10"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="禁用">禁用</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" id="status" lay-filter="status" lay-skin="switch" data-lang="启用|禁用"
+                           lay-text="启用|禁用"/>
+                    <input type="text" style="display:none" name="status" value="0" data-lang="启用|禁用" lay-text="启用|禁用"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit=""
+                    lay-filter="save">
+                <span data-lang="提交">提交</span>
+            </button>
+            <button type="reset" class="pear-btn pear-btn-md">
+                <span data-lang="重置">重置</span>
+            </button>
+        </div>
+    </div>
+
+</form>
+
+<script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+<script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+<script src="/app/admin/admin/js/permission.js"></script>
+<script>
+
+    // 相关接口
+    const INSERT_API = "/app/admin/content/insert";
+
+    // 字段 内容类型 type
+    layui.use(["jquery", "xmSelect", "popup"], function () {
+        layui.$.ajax({
+            url: "/app/admin/dict/get/contenttype",
+            dataType: "json",
+            success: function (res) {
+                let value = layui.$("#type").attr("value");
+                let initValue = value ? value.split(",") : [];
+                layui.each(res.data, function (index, item) {
+                    if (item.name) {
+                        item.name = getText(item.name);
+                    }
+                });
+                var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+                // 语言映射
+                var langMap = {
+                    'zh-CN': 'cn',
+                    'zh-TW': 'cn',
+                    'en': 'en'
+                };
+                var langCode = langMap[currentLang] || 'en';
+                layui.xmSelect.render({
+                    language: langCode,
+                    el: "#type",
+                    name: "type",
+                    initValue: initValue,
+                    data: res.data,
+                    model: {"icon": "hidden", "label": {"type": "text"}},
+                    clickClose: true,
+                    radio: true,
+                    tips: getText("请选择"),
+                });
+                if (res.code) {
+                    layui.popup.failure(res.msg);
+                }
+            }
+        });
+    });
+    // 字段 语言类型 lang
+    layui.use(["jquery", "xmSelect", "popup"], function () {
+        layui.$.ajax({
+            url: "/app/admin/dict/options?table=lang&field=title&key=lang",
+            dataType: "json",
+            success: function (res) {
+                let value = layui.$("#lang").attr("value");
+                let initValue = value ? value.split(",") : [];
+                var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+                // 语言映射
+                var langMap = {
+                    'zh-CN': 'cn',
+                    'zh-TW': 'cn',
+                    'en': 'en'
+                };
+                var langCode = langMap[currentLang] || 'en';
+                layui.xmSelect.render({
+                    language: langCode,
+                    el: "#lang",
+                    name: "lang",
+                    initValue: initValue,
+                    data: res.data,
+                    model: {"icon": "hidden", "label": {"type": "text"}},
+                    clickClose: true,
+                    radio: true,
+                });
+                if (res.code) {
+                    layui.popup.failure(res.msg);
+                }
+            }
+        });
+    });
+    layui.use(['tinymce', 'layer', 'code', 'element'], function () {
+        var tinymce = layui.tinymce
+        layui.code();
+        // 获取当前语言设置
+        var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+        // 语言映射
+        var langMap = {
+            'zh-CN': 'zh_CN',
+            'zh-TW': 'zh_CN',
+            'en': 'en'
+        };
+        var langCode = langMap[currentLang] || 'en';
+        tinymce.render({
+            elem: "#edit",
+            height: 400,
+            language: langCode,
+            setup: function (editor) {
+                editor.on('change keyup paste undo redo', function () {
+                    // 同步编辑器内容到 textarea
+                    layui.$('textarea[name="content"]').val(editor.getContent());
+                });
+            }
+        });
+    });
+    // 字段 禁用 status
+    layui.use(["form"], function () {
+        layui.$("#status").attr("checked", layui.$('input[name="status"]').val() != 0);
+        layui.form.render();
+        layui.form.on("switch(status)", function (data) {
+            layui.$('input[name="status"]').val(this.checked ? 1 : 0);
+        });
+    })
+
+    //提交事件
+    layui.use(["form", "popup"], function () {
+        layui.form.on("submit(save)", function (data) {
+            layui.$.ajax({
+                url: INSERT_API,
+                type: "POST",
+                dateType: "json",
+                data: data.field,
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"), function () {
+                        parent.refreshTable();
+                        parent.layer.close(parent.layer.getFrameIndex(window.name));
+                    });
+                }
+            });
+            return false;
+        });
+    });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>更新页面</title>
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>"/>
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css?v=<?=get_version() ?>"/>
+</head>
+<body>
+
+<form class="layui-form">
+
+    <div class="mainBox">
+        <div class="main-container mr-5">
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="账号类型">账号类型</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="login_type" value="1" title="手机号" data-lang="手机号" checked lay-filter="login_type">
+                    <input type="radio" name="login_type" value="2" title="邮箱" data-lang="邮箱" lay-filter="login_type">
+                </div>
+            </div>
+            <div class="layui-form-item" id="mobile_item">
+                <div class="layui-row">
+                    <div class="layui-col-sm3">
+                        <label class="layui-form-label" data-lang="区号">区号</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="mobile_code" value="" placeholder="+55" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-col-sm8">
+                        <label class="layui-form-label" data-lang="号码">号码</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="mobile" value="" placeholder="8723133112" class="layui-input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item" id="email_item" style="display:none;">
+                <label class="layui-form-label" data-lang="邮箱">邮箱</label>
+                <div class="layui-input-block">
+                    <input type="text" name="email" value="" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="密码">密码</label>
+                <div class="layui-input-block">
+                    <input type="text" name="password" value="" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="昵称">昵称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="nickname" value="" required lay-verify="required" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="头像">头像</label>
+                <div class="layui-input-block">
+                    <img class="img-3" src=""/>
+                    <input type="text" style="display:none" name="avatar" value=""/>
+                    <button type="button" class="pear-btn pear-btn-primary pear-btn-sm" id="avatar"
+                            permission="app.admin.upload.avatar">
+                        <i class="layui-icon layui-icon-upload"></i><span data-lang="上传图片">上传图片</span>
+                    </button>
+                    <button type="button" class="pear-btn pear-btn-primary pear-btn-sm" id="attachment-choose-avatar"
+                            permission="app.admin.upload.attachment">
+                        <i class="layui-icon layui-icon-align-left"></i><span data-lang="选择图片">选择图片</span>
+                    </button>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="等级">等级</label>
+                <div class="layui-input-block">
+                    <div name="level" id="level" value=""></div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="用户状态">用户状态</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" id="status" lay-filter="status" lay-skin="switch" lay-text="启用|禁用" data-lang="启用|禁用"/>
+                    <input type="text" style="display:none" name="status" value="0" lay-text="启用|禁用"/>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="提现状态">提现状态</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" id="withdraw_status" lay-filter="withdraw_status" lay-skin="switch"
+                           lay-text="启用|禁用" data-lang="启用|禁用"/>
+                    <input type="text" style="display:none" name="withdraw_status" value="0" lay-text="启用|禁用"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit="" lay-filter="save">
+                <span data-lang="提交">提交</span>
+            </button>
+            <button type="reset" class="pear-btn pear-btn-md">
+                <span data-lang="重置">重置</span>
+            </button>
+        </div>
+    </div>
+
+</form>
+
+<script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+<script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+<script src="/app/admin/admin/js/permission.js"></script>
+<script>
+
+    // 相关接口
+    const PRIMARY_KEY = "id";
+    const SELECT_API = "/app/admin/user/select" + location.search;
+    const UPDATE_API = "/app/admin/user/update";
+
+    // 获取数据库记录
+    layui.use(["form", "util", "popup"], function () {
+        let $ = layui.$;
+        $.ajax({
+            url: SELECT_API,
+            dataType: "json",
+            success: function (res) {
+
+                // 给表单初始化数据
+                layui.each(res.data[0], function (key, value) {
+                    let obj = $('*[name="' + key + '"]');
+                    if (key === "password") {
+                        obj.attr("placeholder", getText("不更新密码请留空"));
+                        return;
+                    }
+                    if (typeof obj[0] === "undefined" || !obj[0].nodeName) return;
+                    if (obj[0].nodeName.toLowerCase() === "textarea") {
+                        obj.val(layui.util.escape(value));
+                    } else if (obj[0].nodeName.toLowerCase() === "input" && obj.attr("type") === "radio") {
+                        // 处理radio选中
+                        obj.each(function () {
+                            if ($(this).val() == value) {
+                                $(this).prop("checked", true);
+                            }
+                        });
+                        // 重新渲染表单以显示选中状态
+                        layui.form.render('radio');
+                    } else {
+                        obj.attr("value", value);
+                    }
+                });
+                //会员等级下拉列表
+                layui.use(["jquery", "xmSelect"], function () {
+                    let value = layui.$("#level").attr("value");
+                    let initValue = value ? value.split(",") : [];
+                    layui.$.ajax({
+                        url: "/app/admin/userLevel/select",
+                        dataType: "json",
+                        success: function (res) {
+                            let data = res.data;
+                            let options = [];
+                            data.forEach(function (item) {
+                                options.push({
+                                    name: item.name,
+                                    value: item.number
+                                });
+                            });
+                            var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+                            // 语言映射
+                            var langMap = {
+                                'zh-CN': 'cn',
+                                'zh-TW': 'cn',
+                                'en': 'en'
+                            };
+                            var langCode = langMap[currentLang] || 'en';
+                            layui.xmSelect.render({
+                                language: langCode,
+                                el: "#level",
+                                name: "level",
+                                initValue: initValue,
+                                data: options,
+                                value: "0",
+                                model: {"icon": "hidden", "label": {"type": "text"}},
+                                clickClose: true,
+                                radio: true,
+                            })
+                        }
+                    });
+                });
+
+                // 字段 头像 avatar
+                layui.use(["upload", "layer"], function () {
+                    let input = layui.$("#avatar").prev();
+                    input.prev().attr("src", input.val());
+                    layui.$("#attachment-choose-avatar").on("click", function () {
+                        parent.layer.open({
+                            type: 2,
+                            title: getText("选择附件"),
+                            content: "/app/admin/upload/attachment?ext=jpg,jpeg,png,gif,bmp",
+                            area: ["95%", "90%"],
+                            success: function (layero, index) {
+                                parent.layui.$("#layui-layer" + index).data("callback", function (data) {
+                                    input.val(data.url).prev().attr("src", data.url);
+                                });
+                            }
+                        });
+                    });
+                    layui.upload.render({
+                        elem: "#avatar",
+                        url: "/app/admin/upload/avatar",
+                        acceptMime: "image/gif,image/jpeg,image/jpg,image/png",
+                        field: "__file__",
+                        done: function (res) {
+                            if (res.code > 0) return layui.layer.msg(res.msg);
+                            this.item.prev().val(res.data.url).prev().attr("src", res.data.url);
+                        }
+                    });
+                });
+
+                // 字段 生日 birthday
+                layui.use(["laydate"], function () {
+                    var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+                    // 语言映射
+                    var langMap = {
+                        'zh-CN': 'cn',
+                        'zh-TW': 'cn',
+                        'en': 'en'
+                    };
+                    var langCode = langMap[currentLang] || 'en';
+                    layui.laydate.render({
+                        lang: langCode,
+                        elem: "#birthday",
+                    });
+                })
+
+                // 字段 登录时间 last_time
+                layui.use(["laydate"], function () {
+                    var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+                    // 语言映射
+                    var langMap = {
+                        'zh-CN': 'cn',
+                        'zh-TW': 'cn',
+                        'en': 'en'
+                    };
+                    var langCode = langMap[currentLang] || 'en';
+                    layui.laydate.render({
+                        lang: langCode,
+                        elem: "#last_time",
+                        type: "datetime",
+                    });
+                })
+
+                // 字段 注册时间 join_time
+                layui.use(["laydate"], function () {
+                    var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+                    // 语言映射
+                    var langMap = {
+                        'zh-CN': 'cn',
+                        'zh-TW': 'cn',
+                        'en': 'en'
+                    };
+                    var langCode = langMap[currentLang] || 'en';
+                    layui.laydate.render({
+                        lang: langCode,
+                        elem: "#join_time",
+                        type: "datetime",
+                    });
+                })
+
+                // 字段 禁用 status
+                layui.use(["form"], function () {
+                    layui.$("#status").attr("checked", layui.$('input[name="status"]').val() != 0);
+                    layui.form.render();
+                    layui.form.on("switch(status)", function (data) {
+                        layui.$('input[name="status"]').val(this.checked ? 1 : 0);
+                    });
+                    layui.$("#withdraw_status").attr("checked", layui.$('input[name="withdraw_status"]').val() != 0);
+                    layui.form.render();
+                    layui.form.on("switch(withdraw_status)", function (data) {
+                        layui.$('input[name="withdraw_status"]').val(this.checked ? 1 : 0);
+                    });
+
+                    layui.form.on("radio(login_type)", function (data) {
+                        if (data.value == "1") { // 手机号
+                            layui.$("#mobile_item").show();
+                            layui.$("#email_item").hide();
+                        } else { // 邮箱
+                            layui.$("#mobile_item").hide();
+                            layui.$("#email_item").show();
+                        }
+                    });
+
+                    // 初始化时根据默认选中项显示对应表单
+                    if (layui.$('input[name="login_type"]:checked').val() == "1") {
+                        layui.$("#mobile_item").show();
+                        layui.$("#email_item").hide();
+                    } else {
+                        layui.$("#mobile_item").hide();
+                        layui.$("#email_item").show();
+                    }
+                })
+
+                // ajax产生错误
+                if (res.code) {
+                    layui.popup.failure(res.msg);
+                }
+
+            }
+        });
+    });
+
+    //提交事件
+    layui.use(["form", "popup"], function () {
+        layui.form.on("submit(save)", function (data) {
+            data.field[PRIMARY_KEY] = layui.url().search[PRIMARY_KEY];
+            layui.$.ajax({
+                url: UPDATE_API,
+                type: "POST",
+                dateType: "json",
+                data: data.field,
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"), function () {
+                        parent.refreshTable();
+                        parent.layer.close(parent.layer.getFrameIndex(window.name));
+                    });
+                }
+            });
+            return false;
+        });
+    });
+
+</script>
+
+</body>
+
+</html>

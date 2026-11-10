@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="/app/admin/component/layui/css/layui.css?v=2.8.12"/>
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>"/>
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css?v=<?=get_version() ?>"/>
+    <script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+    <script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+    <script src="/app/admin/admin/js/permission.js"></script>
+</head>
+<body class="pear-container">
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-tab layui-tab-brief main-container">
+            <form class="layui-form" lay-filter="formInfo">
+                <div class="layui-form-item">
+                    <label class="layui-form-label" data-lang="名称">名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="name" disabled placeholder="名称" data-lang="名称"
+                               autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label" data-lang="周期">周期</label>
+                    <div class="layui-input-block">
+                        <button type="button" class="pear-btn pear-btn-primary pear-btn-md" id="add-pledge-cycle">
+                            <i class="layui-icon layui-icon-add-1"></i><span data-lang="添加周期">添加周期</span>
+                        </button>
+                    </div>
+                    <div class="layui-input-block" id="pledge-cycle-container">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label" data-lang="状态">状态</label>
+                    <div class="layui-input-block">
+                        <input type="checkbox" id="status" lay-filter="status" lay-skin="switch" lay-text="启用|禁用"
+                               data-lang="启用|禁用"/>
+                        <input type="text" style="display:none" name="status" value="0" lay-text="启用|禁用"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit=""
+                                lay-filter="saveInfo">
+                            <span data-lang="提交">提交</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+    // 初始化计数器
+    let pledgeCycleIndex = 0;
+    //初始化图片上传
+    const SELECT_API = "/app/admin/longconfig/get";
+    const UPDATE_API = "/app/admin/longconfig/update";
+    // 基础设置
+    layui.use(["upload", "layer", "popup"], function () {
+        let $ = layui.$;
+        let form = layui.form;
+        // 提交
+        form.on("submit(saveInfo)", function (data) {
+            $.ajax({
+                url: UPDATE_API,
+                dataType: "json",
+                type: "POST",
+                data: data.field,
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"));
+                }
+            });
+            return false;
+        });
+        $('#add-pledge-cycle').on('click', function () {
+            addPledgeCycleItem();
+        });
+
+        // 删除周期按钮点击事件（使用事件委托）
+        $('#pledge-cycle-container').on('click', '.remove-pledge-cycle', function () {
+            $(this).closest('.pledge-cycle-item').remove();
+        });
+
+        // 添加周期输入框组
+        function addPledgeCycleItem(data = null) {
+            const container = $('#pledge-cycle-container');
+            const itemHtml = `<div class="pledge-cycle-item" data-index="${pledgeCycleIndex}">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">${getText('周期(天)')}</label>
+                    <div class="layui-input-inline">
+                        <input type="number" name="pledge_cycles[${pledgeCycleIndex}][days]" placeholder="${getText('请输入天数')}"
+                               autocomplete="off" class="layui-input" value="${data && data.days ? data.days : ''}">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">${getText('收益率(%)')}</label>
+                    <div class="layui-input-inline">
+                        <input type="number" step="0.01" name="pledge_cycles[${pledgeCycleIndex}][rate]" placeholder="${getText('请输入收益率')}"
+                               autocomplete="off" class="layui-input" value="${data && data.rate ? data.rate : ''}">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">${getText('状态')}</label>
+                    <div class="layui-input-inline">
+                        <input type="checkbox" name="pledge_cycles[${pledgeCycleIndex}][status]" value="1"
+                               lay-skin="switch" lay-text="${getText('启用|禁用')}" ${(!data || data.status == 1) ? 'checked' : ''}>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button type="button" class="pear-btn pear-btn-danger pear-btn-md remove-pledge-cycle">
+                        <i class="layui-icon layui-icon-delete"></i>${getText('删除')}
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+            container.append(itemHtml);
+            layui.form.render(); // 重新渲染表单
+            pledgeCycleIndex++;
+        }
+    });
+    layui.use(["form"], function () {
+        let form = layui.form;
+        let $ = layui.$;
+
+        function addPledgeCycleItem(data = null) {
+            const container = $('#pledge-cycle-container');
+            const itemHtml = `<div class="pledge-cycle-item" data-index="${pledgeCycleIndex}">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <label class="layui-form-label">${getText('周期(天)')}</label>
+                    <div class="layui-input-inline">
+                        <input type="number" name="pledge_cycles[${pledgeCycleIndex}][days]" placeholder="${getText('请输入天数')}"
+                               autocomplete="off" class="layui-input" value="${data && data.days ? data.days : ''}">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">${getText('收益率(%)')}</label>
+                    <div class="layui-input-inline">
+                        <input type="number" step="0.01" name="pledge_cycles[${pledgeCycleIndex}][rate]" placeholder="${getText('请输入收益率')}"
+                               autocomplete="off" class="layui-input" value="${data && data.rate ? data.rate : ''}">
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <label class="layui-form-label">${getText('状态')}</label>
+                    <div class="layui-input-inline">
+                        <input type="checkbox" name="pledge_cycles[${pledgeCycleIndex}][status]" value="1"
+                               lay-skin="switch" lay-text="${getText('启用|禁用')}" ${(!data || data.status == 1) ? 'checked' : ''}>
+                    </div>
+                </div>
+                <div class="layui-inline">
+                    <button type="button" class="pear-btn pear-btn-danger pear-btn-md remove-pledge-cycle">
+                        <i class="layui-icon layui-icon-delete"></i>${getText('删除')}
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+            container.append(itemHtml);
+            layui.form.render(); // 重新渲染表单
+            pledgeCycleIndex++;
+        }
+
+        $.ajax({
+            url: SELECT_API,
+            dataType: "json",
+            success: function (res) {
+                if (res.code) {
+                    return layui.popup.failure(getText(res.msg));
+                }
+                form.val("formInfo", res.data);
+                if (res.data.pledge_cycles && res.data.pledge_cycles.length > 0) {
+                    res.data.pledge_cycles.forEach(function (item) {
+                        addPledgeCycleItem(item);
+                    });
+                } else {
+                    // 默认添加一个空的输入框组
+                    addPledgeCycleItem();
+                }
+                layui.$('input[name="name"]').val(getText(layui.$('input[name="name"]').val()));
+                layui.$("#status").attr("checked", layui.$('input[name="status"]').val() != 0);
+                layui.form.render();
+                layui.form.on("switch(status)", function (data) {
+                    layui.$('input[name="status"]').val(this.checked ? 1 : 0);
+                });
+            }
+        });
+    });
+
+</script>
+
+</body>
+</html>

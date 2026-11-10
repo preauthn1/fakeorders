@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>登录</title>
+    <!-- 样 式 文 件 -->
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>"/>
+    <link rel="stylesheet" href="/app/admin/admin/css/pages/login.css"/>
+</head>
+<!-- 代 码 结 构 -->
+<body background="/app/admin/admin/images/background.svg" style="background-size: cover;">
+<form class="layui-form">
+    <div class="layui-form-item">
+        <img class="logo" src="<?=$logo?>"/>
+        <div class="title pear-text"><?=$title?></div>
+    </div>
+    <!-- 语言选择框 -->
+    <div class="layui-form-item language-select-container">
+        <div class="layui-input-inline" style="width: 317px">
+            <select name="language" lay-filter="languageSelect" id="languageSelect">
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <input lay-verify="required" hover class="layui-input" type="text" name="username" value="" data-lang="用户名"
+               placeholder="用户名"/>
+    </div>
+    <div class="layui-form-item">
+        <input lay-verify="required" hover class="layui-input" type="password" name="password" value="" data-lang="密码"
+               placeholder="密码"/>
+    </div>
+    <div class="layui-form-item">
+        <input hover lay-verify="required" class="code layui-input layui-input-inline" name="captcha" data-lang="验证码"
+               placeholder="验证码"/>
+        <img class="codeImage" width="120px"/>
+    </div>
+    <div class="layui-form-item">
+        <input hover class="layui-input" type="code" name="code" value="" data-lang="谷歌验证码"
+               placeholder="谷歌验证码"/>
+        <div class="layui-form-mid" data-lang="如果绑定谷歌验证码，请输入谷歌验证码，否则请留空">如果绑定谷歌验证码，请输入谷歌验证码，否则请留空</div>
+    </div>
+    <div class="layui-form-item">
+        <button type="submit" class="pear-btn pear-btn-primary login" lay-submit lay-filter="login" data-lang="登 入">
+            登 入
+        </button>
+    </div>
+</form>
+<script>
+    var color = localStorage.getItem("theme-color-color");
+    var second = localStorage.getItem("theme-color-second");
+    if (!color || !second) {
+        localStorage.setItem("theme-color-color", "#2d8cf0");
+        localStorage.setItem("theme-color-second", "#ecf5ff");
+    }
+</script>
+<!-- 资 源 引 入 -->
+<script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+<script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+<script>
+    layui.use(['form', 'button', 'popup', 'layer', 'theme', 'admin'], function () {
+
+        var $ = layui.$, layer = layui.layer, form = layui.form;
+
+        function switchCaptcha() {
+            $('.codeImage').attr("src", "/app/admin/account/captcha/login?v=" + new Date().getTime());
+        }
+
+        switchCaptcha();
+        // 登 录 提 交
+        form.on('submit(login)', function (data) {
+            layer.load();
+            $.ajax({
+                url: '/app/admin/account/login',
+                type: "POST",
+                data: data.field,
+                success: function (res) {
+                    layer.closeAll('loading');
+                    if (!res.code) {
+                        layui.popup.success(getText("操作成功"), function () {
+                            location.reload();
+                        })
+                    } else {
+                        layui.popup.failure(res.msg)
+                        switchCaptcha();
+                    }
+                }
+            });
+            return false;
+        });
+        $('.codeImage').on('click', function () {
+            switchCaptcha();
+        });
+        var language = {
+            "zh-CN": "简体中文",
+            "en": "English"
+        };
+        var languagePacks = {};
+
+        // 动态生成语言选择框选项
+        function generateLanguageSelect(langData) {
+            var selectHtml = '';
+            var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+            // 生成选项
+            $.each(langData, function (index, langItem) {
+                var selected = langItem.lang == currentLang ? 'selected' : '';
+                selectHtml += '<option value="' + langItem.lang + '" ' + selected + '>' + langItem.title + '</option>';
+            });
+            // 插入到选择框中
+            $('#languageSelect').html(selectHtml);
+
+            // 重新渲染表单
+            form.render('select');
+        }
+
+        // 修改语言切换函数
+        function switchLanguage(lang) {
+            languagePacks = JSON.parse(localStorage.getItem("admin_language_packs"));
+            localStorage.setItem('admin_language', lang);
+
+            let currentDisplayLang = "语言";
+            // 查找当前语言对应的显示名称
+            $.each(language, function (index, langItem) {
+                if (langItem.lang == lang) {
+                    currentDisplayLang = langItem.title;
+                    return false; // 跳出循环
+                }
+            });
+
+            // 更新选择框选中项
+            $('#languageSelect').val(lang);
+            form.render('select');
+
+            // 重新应用语言
+            $('[data-lang]').each(function () {
+                var langKey = $(this).data('lang');
+                var text = getText(langKey);
+                if (this.tagName === 'INPUT' || this.tagName === 'TEXTAREA') {
+                    $(this).attr('placeholder', text);
+                } else {
+                    $(this).text(text);
+                }
+            });
+        }
+
+        // 语言选择事件监听
+        form.on('select(languageSelect)', function(data) {
+            console.log(data.value)
+            if (data.value) {
+                switchLanguage(data.value);
+            }
+        });
+
+        /**
+         * 刷新本地语言包
+         */
+        function updateLanguagePacks() {
+            $.ajax({
+                url: "/app/admin/index/get_lang",
+                dataType: 'json',
+                success: function (res) {
+                    languagePacks = res.data.list;
+                    language = res.data.lang;
+                    localStorage.setItem("admin_language_packs", JSON.stringify(languagePacks))
+                    var lang = localStorage.getItem("admin_language");
+                    switchLanguage(lang ?? "zh-CN");
+                    // 生成语言选择框选项
+                    if (language) {
+                        generateLanguageSelect(language);
+                    }
+                }
+            });
+        }
+        updateLanguagePacks();
+    })
+</script>
+</body>
+</html>

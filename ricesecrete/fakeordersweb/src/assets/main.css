@@ -1,0 +1,58 @@
+@import './base.css';
+
+#app {
+  /* max-width: 1280px; */
+  font-weight: normal;
+  width: 100%;
+  height: 100%;
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+  padding: 3px;
+}
+
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    width: 100%;
+  height: 100%;
+  }
+
+}
+
+.van-uploader__preview-image {
+  display: block;
+  width: var(--van-uploader-size);
+  height: var(--van-uploader-size);
+  overflow: hidden;
+  border-radius: 10px !important;
+}
+
+.van-uploader__preview {
+  position: relative;
+  margin: 0px 10px 10px 0 !important;
+  cursor: pointer;
+}
+
+@font-face {
+  font-family: 'Nasalization-Regular';
+  src: url('@/assets/fonts/Nasalization_Rg.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'NCS_Rogueland';
+  src: url('@/assets/fonts/NCS_Rogueland.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}

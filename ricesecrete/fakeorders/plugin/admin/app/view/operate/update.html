@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>更新页面</title>
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>"/>
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css?v=<?=get_version() ?>"/>
+</head>
+<body>
+
+<form class="layui-form">
+    <div class="main-container mr-5">
+        <div class="layui-form-item">
+            <label class="layui-form-label" data-lang="管理员id">管理员id</label>
+            <div class="layui-input-block">
+                <input type="text" name="admin_id" disabled value="" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" data-lang="操作标题">操作标题</label>
+            <div class="layui-input-block">
+                <input type="text" name="title" disabled value="" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label" data-lang="操作路由">操作路由</label>
+            <div class="layui-input-block">
+                <input type="text" name="path" disabled value="" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label required" data-lang="内容">内容</label>
+            <div class="layui-input-block">
+                <textarea name="param" rows="10" class="layui-textarea"></textarea>
+            </div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="button-container">
+            <button type="reset" class="pear-btn pear-btn-md">
+                <span data-lang="重置">重置</span>
+            </button>
+        </div>
+    </div>
+
+</form>
+
+<script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+<script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+<script src="/app/admin/admin/js/permission.js"></script>
+<script>
+
+    // 相关接口
+    const PRIMARY_KEY = "id";
+    const SELECT_API = "/app/admin/operate/select" + location.search;
+    const UPDATE_API = "/app/admin/operate/update";
+    function unescapeUnicode(str) {
+        return str.replace(/\\u[\dA-F]{4}/gi, function (match) {
+            return String.fromCharCode(parseInt(match.replace(/\\u/g, ''), 16));
+        });
+    }
+    // 获取数据库记录
+    layui.use(["form", "util", "popup"], function () {
+        let $ = layui.$;
+        $.ajax({
+            url: SELECT_API,
+            dataType: "json",
+            success: function (res) {
+
+                // 给表单初始化数据
+                layui.each(res.data[0], function (key, value) {
+                    let obj = $('*[name="' + key + '"]');
+                    if (key === "password") {
+                        obj.attr("placeholder", getText("不更新密码请留空"));
+                        return;
+                    }
+                    if (typeof obj[0] === "undefined" || !obj[0].nodeName) return;
+                    if (obj[0].nodeName.toLowerCase() === "textarea") {
+                        obj.val(unescapeUnicode(value));
+                    } else {
+                        obj.attr("value", value);
+                    }
+                });
+                // ajax产生错误
+                if (res.code) {
+                    layui.popup.failure(res.msg);
+                }
+
+            }
+        });
+    });
+
+</script>
+
+</body>
+
+</html>

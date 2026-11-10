@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>新增页面</title>
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>"/>
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css?v=<?=get_version() ?>"/>
+</head>
+<body>
+
+<form class="layui-form" action="">
+    <div class="mainBox">
+        <div class="main-container mr-5">
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="发送方式">发送方式</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="send_type" value="1" title="按等级" data-lang="按等级" checked lay-filter="send_type">
+                    <input type="radio" name="send_type" value="2" title="指定会员下级" data-lang="指定会员下级" lay-filter="send_type">
+                </div>
+            </div>
+            <div class="layui-form-item" id="level_id">
+                <label class="layui-form-label" data-lang="接收对象">接收对象</label>
+                <div class="layui-input-block">
+                    <div name="level" id="level" value=""></div>
+                </div>
+            </div>
+            <div class="layui-form-item" id="user_name">
+                <label class="layui-form-label" data-lang="指定会员">指定会员</label>
+                <div class="layui-input-block">
+                    <textarea name="user_names" rows="3" placeholder="请用英文逗号“,”分隔" data-lang="请用英文逗号“,”分隔" class="layui-textarea"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item" id="assign_user" style="display: none">
+                <label class="layui-form-label" data-lang="指定账号">指定账号</label>
+                <div class="layui-input-block">
+                    <input type="text" name="user_name" value="" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="是否弹窗">是否弹窗</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" id="is_pop" lay-filter="is_pop" lay-skin="switch" lay-text="启用|禁用" data-lang="启用|禁用"/>
+                    <input type="text" style="display:none" name="is_pop" value="0" lay-text="启用|禁用"/>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="标题">标题</label>
+                <div class="layui-input-block">
+                    <input type="text" name="title" value="" required lay-verify="required" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="内容">内容</label>
+                <div class="layui-input-block">
+                    <textarea name="content" rows="5" class="layui-textarea"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit=""
+                    lay-filter="save">
+                <span data-lang="提交">提交</span>
+            </button>
+            <button type="reset" class="pear-btn pear-btn-md">
+                <span data-lang="重置">重置</span>
+            </button>
+        </div>
+    </div>
+
+</form>
+
+<script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+<script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+<script src="/app/admin/admin/js/permission.js"></script>
+<script>
+
+    // 相关接口
+    const INSERT_API = "/app/admin/message/insert";
+
+    // 菜单类型下拉列表
+    layui.use(["jquery", "xmSelect"], function () {
+        let value = layui.$("#level").attr("value");
+        let initValue = value ? value.split(",") : [];
+        layui.$.ajax({
+            url: "/app/admin/userLevel/select",
+            dataType: "json",
+            success: function (res) {
+                let data = res.data;
+                let options = [];
+                data.forEach(function (item) {
+                    options.push({
+                        name: item.name,
+                        value: item.number
+                    });
+                });
+                var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+                // 语言映射
+                var langMap = {
+                    'zh-CN': 'cn',
+                    'zh-TW': 'cn',
+                    'en': 'en'
+                };
+                var langCode = langMap[currentLang] || 'en';
+                layui.xmSelect.render({
+                    language:langCode,
+                    el: "#level",
+                    name: "level",
+                    initValue: initValue,
+                    data: options,
+                    value: "0",
+                    model: {"icon": "hidden", "label": {"type": "text"}},
+                    clickClose: false,
+                    radio: false,
+                    clearable: true,
+                    toolbar: {
+                        show: true, // 显示工具栏
+                        list: ['ALL', 'CLEAR', 'REVERSE'] // 显示全选、清空、反选按钮
+                    },
+                    filterable: true, // 支持搜索过滤
+                })
+            }
+        });
+    });
+    // 字段 弹窗 is_pop
+    layui.use(["form"], function () {
+        layui.$("#is_pop").attr("checked", layui.$('input[name="is_pop"]').val() != 0);
+        layui.form.render();
+        layui.form.on("switch(is_pop)", function (data) {
+            layui.$('input[name="is_pop"]').val(this.checked ? 1 : 0);
+        });
+        layui.form.on("radio(send_type)", function (data) {
+            if (data.value == "1") {
+                layui.$("#level_id").show();
+                layui.$("#user_name").show();
+                layui.$("#assign_user").hide();
+            } else {
+                layui.$("#level_id").hide();
+                layui.$("#user_name").hide();
+                layui.$("#assign_user").show();
+            }
+        });
+    })
+    //提交事件
+    layui.use(["form", "popup"], function () {
+        layui.form.on("submit(save)", function (data) {
+            layui.$.ajax({
+                url: INSERT_API,
+                type: "POST",
+                dateType: "json",
+                data: data.field,
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"), function () {
+                        parent.refreshTable();
+                        parent.layer.close(parent.layer.getFrameIndex(window.name));
+                    });
+                }
+            });
+            return false;
+        });
+    });
+
+</script>
+
+</body>
+</html>

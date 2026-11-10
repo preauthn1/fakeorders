@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8">
+    <title>浏览页面</title>
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>"/>
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css?v=<?=get_version() ?>"/>
+    <style>
+        /*//状态 1 待支付 2 通过 3 失效*/
+        .color_1 {
+            color: red;
+        }
+
+        .color_2 {
+            color: green;
+        }
+
+        .color_3 {
+            color: blue;
+        }
+    </style>
+</head>
+<body class="pear-container">
+
+<!-- 顶部查询表单 -->
+<div class="layui-card">
+    <div class="layui-card-body">
+        <form class="layui-form top-search-from">
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="编号">编号</label>
+                <div class="layui-input-block">
+                    <input type="text" name="number[0]" style="display: none" value="like" class="layui-input">
+                    <input type="text" name="number[1]" value="" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="用户id">用户id</label>
+                <div class="layui-input-block">
+                    <input type="text" name="user_id" value="" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="用户名称">用户名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="username" value="" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="时间">时间</label>
+                <div class="layui-input-block">
+                    <div class="layui-input-block" id="created_at">
+                        <input type="text" autocomplete="off" name="created_at[]" id="created_at-date-start"
+                               class="layui-input inline-block" placeholder="开始时间" data-lang="开始时间">
+                        -
+                        <input type="text" autocomplete="off" name="created_at[]" id="created_at-date-end"
+                               class="layui-input inline-block" placeholder="结束时间" data-lang="结束时间">
+                    </div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="支付平台">支付平台</label>
+                <div class="layui-input-block">
+                    <div name="platform_id" id="platform_id" value=""></div>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="状态">状态</label>
+                <div class="layui-input-block">
+                    <div name="status" id="status" value=""></div>
+                </div>
+            </div>
+            <div class="layui-form-item layui-inline">
+                <button class="pear-btn pear-btn-md pear-btn-primary" lay-submit lay-filter="table-query">
+                    <i class="layui-icon layui-icon-search"></i><span data-lang="查询">查询</span>
+                </button>
+                <button type="reset" class="pear-btn pear-btn-md" lay-submit lay-filter="table-reset">
+                    <i class="layui-icon layui-icon-refresh"></i><span data-lang="重置">重置</span>
+                </button>
+                <button class="pear-btn pear-btn-danger pear-btn-md" lay-submit lay-filter="table-export"
+                        permission="app.admin.recharge.export">
+                    <i class="layui-icon layui-icon-file"></i><span data-lang="导出">导出</span>
+                </button>
+            </div>
+            <div class="toggle-btn">
+                <a class="layui-hide"><span data-lang="展开">展开</span><i class="layui-icon layui-icon-down"></i></a>
+                <a class="layui-hide"><span data-lang="收起">收起</span><i class="layui-icon layui-icon-up"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 数据表格 -->
+<div class="layui-card">
+    <div class="layui-card-body">
+        <table id="data-table" lay-filter="data-table"></table>
+    </div>
+</div>
+
+<!-- 表格顶部工具栏 -->
+<script type="text/html" id="table-toolbar">
+    <button class="pear-btn pear-btn-primary pear-btn-md" lay-event="add" permission="app.admin.recharge.insert">
+        <i class="layui-icon layui-icon-add-1"></i>{{= getText('补单') }}
+    </button>
+    <!--    <button class="pear-btn pear-btn-danger pear-btn-md" lay-event="batchRemove"-->
+    <!--            permission="app.admin.recharge.delete">-->
+    <!--        <i class="layui-icon layui-icon-delete"></i>{{= getText('删除') }}-->
+    <!--    </button>-->
+</script>
+
+<!-- 表格行工具栏 -->
+<script type="text/html" id="table-bar">
+    <button class="pear-btn pear-btn-xs tool-btn" lay-event="edit" permission="app.admin.recharge.update">{{=
+        getText('编辑/审核') }}
+    </button>
+    <!--    <button class="pear-btn pear-btn-xs tool-btn" lay-event="remove" permission="app.admin.recharge.delete">{{= getText('删除') }}</button>-->
+</script>
+<!--用户信息-->
+<script type="text/html" id="data-table-user-info">
+    <ul>
+        {{# if (d.user_info.login_type == 1) {}}
+        <li>{{= getText('账号') }}：(ID:{{= d.user_info.id }}) ({{=d.user_info.mobile_code}}){{= d.user_info.username }}
+        </li>
+        {{# } else { }}
+        <li>{{= getText('账号') }}：{{= d.user_info.username }}</li>
+        {{# } }}
+        <li>{{= getText('顶级') }}：{{= d.user_info.leader0_user }}</li>
+        <li>{{= getText('一级') }}：{{= d.user_info.leader1_user }}</li>
+        {{# if (d.is_demo == 1) { }}
+        <li><span style="color: red">{{= getText('虚拟账户') }}</span></li>
+        {{# } }}
+    </ul>
+</script>
+<!--订单信息-->
+<script type="text/html" id="data-table-order-info">
+    <ul>
+        <li>{{= getText('订单号') }}：{{= d.number }}</li>
+        <li>{{= getText('发送地址') }}：{{= d.from_address }}</li>
+        <li>{{= getText('接收地址') }}：{{= d.to_address }}</li>
+        <li>{{= getText('创建时间') }}：{{= d.created_at }}</li>
+    </ul>
+</script>
+<!--订单信息-->
+<script type="text/html" id="data-table-money-info">
+    <ul>
+        <li>{{= getText('币种') }}：{{= d.unit }}</li>
+        <li>{{= getText('金额') }}：{{= d.money }}</li>
+        <li>{{= getText('汇率') }}：{{= d.exchange_rate }}</li>
+        <li>{{= getText('原始金额') }}：{{= d.original_money }}</li>
+    </ul>
+</script>
+<!--订单状态-->
+<script type="text/html" id="data-table-status-info">
+    <ul>
+        <li>{{= getText('状态') }}：<span class="color_{{= d.status }}">{{= getText(d.status_str) }}</span></li>
+        <li>{{= getText('成功时间') }}：{{= d.success_time_str }}</li>
+        <li>{{= getText('首次充值') }}：{{= d.is_first==0?getText("否"):getText("是") }}</li>
+        <li>{{= getText('支付平台') }}：{{= d.platform_name }}</li>
+    </ul>
+</script>
+<!--备注信息-->
+<script type="text/html" id="data-table-remark-info">
+    <ul>
+        <li>{{= getText('备注') }}：{{= d.remark }}</li>
+        <li>{{= getText('操作ip') }}:{{= d.ip }}</li>
+        <li>{{= getText('管理员') }}:{{= d.admin_name }}</li>
+    </ul>
+</script>
+
+<script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+<script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+<script src="/app/admin/admin/js/permission.js"></script>
+<script src="/app/admin/admin/js/common.js"></script>
+<script>
+
+    // 相关常量
+    const PRIMARY_KEY = "id";
+    const SELECT_API = "/app/admin/recharge/select";
+    const UPDATE_API = "/app/admin/recharge/update";
+    const DELETE_API = "/app/admin/recharge/delete";
+    const INSERT_URL = "/app/admin/recharge/insert";
+    const UPDATE_URL = "/app/admin/recharge/update";
+    const EXPORT_URL = "/app/admin/recharge/export";
+    // 支付平台id
+    layui.use(["jquery", "xmSelect", "popup"], function () {
+        layui.$.ajax({
+            url: '/app/admin/paymentPlatform/select',
+            dataType: "json",
+            success: function (res) {
+                if (res.code === 0) {
+                    let initformattedData = res.data.map(item => {
+                        return {
+                            value: item.id,
+                            name: '(' + item.unit + ')' + item.name
+                        };
+                    });
+                    // 初始化 xmSelect
+                    var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+                    // 语言映射
+                    var langMap = {
+                        'zh-CN': 'cn',
+                        'zh-TW': 'cn',
+                        'en': 'en'
+                    };
+                    var langCode = langMap[currentLang] || 'en';
+                    layui.xmSelect.render({
+                        language: langCode,
+                        el: "#platform_id",
+                        name: "platform_id",
+                        initValue: [],
+                        data: [], // 初始数据为空
+                        model: {"icon": "hidden", "label": {"type": "text"}},
+                        clickClose: true,
+                        radio: true,
+                        clearable: true,
+                        filterable: true, // 启用过滤功能
+                        toolbar: {
+                            show: true,
+                            list: ['ALL', 'CLEAR', 'REVERSE']
+                        },
+                        remoteSearch: true,
+                        remoteMethod: function (val, cb, show) {
+                            // 如果搜索关键词为空，不执行搜索
+                            if (!val) {
+                                return cb(initformattedData);
+                            }
+                            let name = ['like', val];
+                            // 显示加载状态
+                            // 执行远程搜索
+                            layui.$.ajax({
+                                url: '/app/admin/paymentPlatform/select',
+                                data: {name},
+                                dataType: "json",
+                                success: function (res) {
+                                    if (res.code === 0) {
+                                        let formattedData = res.data.map(item => {
+                                            return {
+                                                value: item.id,
+                                                name: '(' + item.unit + ')' + item.name
+                                            };
+                                        });
+                                        cb(formattedData);
+                                    } else {
+                                        cb(initformattedData);
+                                    }
+                                },
+                                error: function () {
+                                    cb(initformattedData);
+                                }
+                            });
+                        },
+                    });
+                }
+            }
+        });
+    });
+    // 字段 状态 status
+    layui.use(["jquery", "xmSelect", "popup"], function () {
+        layui.$.ajax({
+            url: "/app/admin/dict/get/rechargestatus",
+            dataType: "json",
+            success: function (res) {
+                let value = layui.$("#status").attr("value");
+                let initValue = value ? value.split(",") : [];
+                //增加全部
+                res.data.unshift({
+                    value: "",
+                    name: getText("全部")
+                })
+                var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+                // 语言映射
+                var langMap = {
+                    'zh-CN': 'cn',
+                    'zh-TW': 'cn',
+                    'en': 'en'
+                };
+                var langCode = langMap[currentLang] || 'en';
+                layui.xmSelect.render({
+                    language: langCode,
+                    el: "#status",
+                    name: "status",
+                    initValue: initValue,
+                    data: res.data,
+                    model: {"icon": "hidden", "label": {"type": "text"}},
+                    clickClose: true,
+                    radio: true,
+                    clearable: true, // 允许清空
+                });
+                if (res.code) {
+                    layui.popup.failure(res.msg);
+                }
+            }
+        });
+    });
+    // 字段 创建时间 created_at
+    layui.use(["laydate"], function () {
+        var currentLang = localStorage.getItem('admin_language') || 'zh-CN';
+        // 语言映射
+        var langMap = {
+            'zh-CN': 'cn',
+            'zh-TW': 'cn',
+            'en': 'en'
+        };
+        var langCode = langMap[currentLang] || 'en';
+        layui.laydate.render({
+            lang: langCode,
+            elem: "#created_at",
+            range: ["#created_at-date-start", "#created_at-date-end"],
+            type: "datetime",
+        });
+    })
+    // 表格渲染
+    layui.use(["table", "form", "common", "popup", "util"], function () {
+        let table = layui.table;
+        let form = layui.form;
+        let $ = layui.$;
+        let common = layui.common;
+        let util = layui.util;
+
+        // 表头参数
+        let cols = [
+            {
+                title: getText("主键"),
+                field: "id",
+                width: 130,
+            }, {
+                title: getText("用户信息"),
+                field: "user_id",
+                templet: '#data-table-user-info',
+                width: 260,
+            }, {
+                title: getText("订单信息"),
+                field: "number",
+                templet: '#data-table-order-info',
+                width: 430,
+            }, {
+                title: getText("金额信息"),
+                field: "money",
+                templet: '#data-table-money-info',
+                width: 200,
+            }, {
+                title: getText("订单状态"),
+                field: "money",
+                templet: '#data-table-status-info',
+                width: 310,
+            }, {
+                title: getText("备注信息"),
+                field: "remark",
+                templet: '#data-table-remark-info',
+                width: 220,
+            }, {
+                title: getText("创建时间"),
+                field: "created_at",
+                hide: true,
+            }, {
+                title: getText("更新时间"),
+                field: "updated_at",
+                hide: true,
+            }, {
+                title: getText("操作"),
+                toolbar: "#table-bar",
+                align: "center",
+                fixed: "right",
+                width: 130,
+            }
+        ];
+
+        // 渲染表格
+        function render() {
+            table.render({
+                elem: "#data-table",
+                url: SELECT_API,
+                page: {
+                    layout: ['count', 'prev', 'page', 'next', 'limit', 'refresh', 'skip'],
+                    groups: 5,
+                    first: getText("首页"),
+                    last: getText("尾页"),
+                    prev: getText("上一页"),
+                    next: getText("下一页"),
+                    limits: [10, 20, 30, 40, 50],
+                    limit: 10,
+                    limitTemplet: function (curr, limit) {
+                        return curr + " " + getText("条/页");
+                    },
+                    // limitTips: [getText("当前页"), getText("条/页"), getText("共"), getText("条")],
+                    skipText: [getText("跳转"), '', getText("确认")],
+                    countText: [getText("共") + " ", " " + getText("页")]
+                },
+                height: 'full-32',
+                lineStyle: 'height: 180px;', // 定义表格的多行样式
+                css: [ // 直接给当前表格主容器重置 css 样式
+                    '.layui-table-page{text-align: center;}' // 让分页栏居中
+                ].join(''),
+                className: 'layui-table-testcss', // 用于给表格主容器追加 css 类名
+                cols: [cols],
+                skin: "line",
+                size: "lg",
+                toolbar: "#table-toolbar",
+                autoSort: false,
+                //无数据
+                text: {
+                    none: getText("暂无数据")
+                },
+                defaultToolbar: [{
+                    title: getText("刷新"),
+                    layEvent: "refresh",
+                    icon: "layui-icon-refresh",
+                }, "filter", "print", "exports"],
+                done: function () {
+                    layer.photos({photos: 'div[lay-id="data-table"]', anim: 5});
+                }
+            });
+        }
+
+        // 编辑或删除行事件
+        table.on("tool(data-table)", function (obj) {
+            if (obj.event === "remove") {
+                remove(obj);
+            } else if (obj.event === "edit") {
+                edit(obj);
+            }
+        });
+
+        // 表格顶部工具栏事件
+        table.on("toolbar(data-table)", function (obj) {
+            if (obj.event === "add") {
+                add();
+            } else if (obj.event === "refresh") {
+                refreshTable();
+            } else if (obj.event === "batchRemove") {
+                batchRemove(obj);
+            }
+        });
+
+        // 表格顶部搜索事件
+        form.on("submit(table-query)", function (data) {
+            table.reload("data-table", {
+                page: {
+                    curr: 1
+                },
+                where: data.field
+            })
+            return false;
+        });
+
+        // 表格顶部搜索重置事件
+        form.on("submit(table-reset)", function (data) {
+            table.reload("data-table", {
+                where: []
+            })
+        });
+
+        form.on("submit(table-export)", function (data) {
+            // 获取form 表单数据
+            // console.log(data.field)
+            layer.confirm(getText("确定导出?"), {
+                icon: 3,
+                title: getText("提示")
+            }, function (index) {
+                layer.close(index);
+                let loading = layer.load();
+                $.ajax({
+                    url: EXPORT_URL,
+                    data: data.field,
+                    dataType: "json",
+                    type: "get",
+                    success: function (res) {
+                        layer.close(loading);
+                        if (res.code) {
+                            return layui.popup.failure(getText(res.msg));
+                        }
+                        return layui.popup.success(getText("操作成功"), refreshTable);
+                    }
+                })
+            });
+            return false;
+        });
+        // 表格排序事件
+        table.on("sort(data-table)", function (obj) {
+            table.reload("data-table", {
+                initSort: obj,
+                scrollPos: "fixed",
+                where: {
+                    field: obj.field,
+                    order: obj.type
+                }
+            });
+        });
+
+        // 表格新增数据
+        let add = function () {
+            layer.open({
+                type: 2,
+                title: getText("新增"),
+                shade: 0.1,
+                area: [common.isModile() ? "100%" : "900px", common.isModile() ? "100%" : "550px"],
+                content: INSERT_URL
+            });
+        }
+
+        // 表格编辑数据
+        let edit = function (obj) {
+            let value = obj.data[PRIMARY_KEY];
+            layer.open({
+                type: 2,
+                title: getText("修改"),
+                shade: 0.1,
+                area: [common.isModile() ? "100%" : "900px", common.isModile() ? "100%" : "550px"],
+                content: UPDATE_URL + "?" + PRIMARY_KEY + "=" + value
+            });
+        }
+
+        // 删除一行
+        let remove = function (obj) {
+            return doRemove(obj.data[PRIMARY_KEY]);
+        }
+
+        // 删除多行
+        let batchRemove = function (obj) {
+            let checkIds = common.checkField(obj, PRIMARY_KEY);
+            if (checkIds === "") {
+                layui.popup.warning(getText("未选中数据"));
+                return false;
+            }
+            doRemove(checkIds.split(","));
+        }
+
+        // 执行删除
+        let doRemove = function (ids) {
+            let data = {};
+            data[PRIMARY_KEY] = ids;
+            layer.confirm(getText("确定删除?"), {
+                icon: 3,
+                title: getText("提示")
+            }, function (index) {
+                layer.close(index);
+                let loading = layer.load();
+                $.ajax({
+                    url: DELETE_API,
+                    data: data,
+                    dataType: "json",
+                    type: "post",
+                    success: function (res) {
+                        layer.close(loading);
+                        if (res.code) {
+                            return layui.popup.failure(getText(res.msg));
+                        }
+                        return layui.popup.success(getText("操作成功"), refreshTable);
+                    }
+                })
+            });
+        }
+
+        // 刷新表格数据
+        window.refreshTable = function () {
+            table.reloadData("data-table", {
+                scrollPos: "fixed",
+                done: function (res, curr) {
+                    if (curr > 1 && res.data && !res.data.length) {
+                        curr = curr - 1;
+                        table.reloadData("data-table", {
+                            page: {
+                                curr: curr
+                            },
+                        })
+                    }
+                }
+            });
+        }
+        render();
+    })
+
+</script>
+</body>
+</html>

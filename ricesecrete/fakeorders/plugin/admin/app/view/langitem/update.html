@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>更新页面</title>
+    <link rel="stylesheet" href="/app/admin/component/pear/css/pear.css?v=<?=get_version() ?>"/>
+    <link rel="stylesheet" href="/app/admin/admin/css/reset.css?v=<?=get_version() ?>"/>
+</head>
+<body>
+
+<form class="layui-form">
+    <div class="mainBox">
+        <div class="main-container mr-5">
+            <div class="layui-form-item">
+                <label class="layui-form-label required" data-lang="条目">条目</label>
+                <div class="layui-input-block">
+                    <input type="text" name="title" value="" required lay-verify="required" class="layui-input"
+                           data-lang="请输入条目名称" placeholder="请输入条目名称">
+                </div>
+                <div style="text-align: center;margin-top: 5px">
+                    <button type="button" class="layui-btn layui-btn-primary" id="translate" lay-on="translate"
+                            data-lang="一键翻译">一键翻译
+                    </button>
+                    <br>
+                    <span style="color: red"
+                          data-lang="如果翻译内容过大耐心等待，如果一直报错请到谷歌翻译网站进行翻译">如果翻译内容过大耐心等待，如果一直报错请到谷歌翻译网站进行翻译</span><br>
+                    <a target="_blank" href="https://translate.google.com/"
+                       data-lang="谷歌翻译网址">谷歌翻译网址</a><a href="https://translate.google.com/">https://translate.google.com/</a>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" data-lang="类型">类型</label>
+                <div class="layui-input-block">
+                    <select name="type" class="layui-select">
+                        <option value="0" data-lang="前端">前端</option>
+                        <option value="1" data-lang="后台">后台</option>
+                    </select>
+                </div>
+            </div>
+            <?php foreach ($columns as $column): ?>
+            <div class="layui-form-item">
+                <label class="layui-form-label"
+                       data-lang="<?= htmlspecialchars($column['title']) ?>"><?= htmlspecialchars($column['title']) ?></label>
+                <div class="layui-input-block">
+                    <input type="text" name="<?= htmlspecialchars($column['field']) ?>"
+                           value="<?= htmlspecialchars($column['text']) ?>" class="layui-input">
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <div class="bottom">
+        <div class="button-container">
+            <button type="submit" class="pear-btn pear-btn-primary pear-btn-md" lay-submit="" lay-filter="save">
+                <span data-lang="提交">提交</span>
+            </button>
+            <button type="reset" class="pear-btn pear-btn-md">
+                <span data-lang="重置">重置</span>
+            </button>
+        </div>
+    </div>
+
+</form>
+
+<script src="/app/admin/component/layui/layui.js?v=<?=layui_version() ?>"></script>
+<script src="/app/admin/component/pear/pear.js?v=<?=get_version() ?>"></script>
+<script src="/app/admin/admin/js/permission.js"></script>
+<script>
+    // 相关接口
+    const PRIMARY_KEY = "id";
+    const SELECT_API = "/app/admin/langItem/select" + location.search;
+    const UPDATE_API = "/app/admin/langItem/update";
+    // 获取数据库记录
+    layui.use(["form", "util", "popup"], function () {
+        let $ = layui.$;
+        let layer = layui.layer;
+        let translateBtn = $("#translate");
+        $.ajax({
+            url: SELECT_API,
+            dataType: "json",
+            success: function (res) {
+                // 给表单初始化数据
+                layui.each(res.data[0], function (key, value) {
+                    let obj = $('*[name="' + key + '"]');
+                    if (key === "password") {
+                        obj.attr("placeholder", getText("不更新密码请留空"));
+                        return;
+                    }
+                    if (typeof obj[0] === "undefined" || !obj[0].nodeName){
+                        return
+                    }
+                    if (obj[0].nodeName.toLowerCase() === "select") {
+                        obj.val(value);
+                        // 重新渲染表单以更新显示
+                        layui.form.render('select');
+                    } else if (obj[0].nodeName.toLowerCase() === "textarea") {
+                        obj.val(layui.util.escape(value));
+                    } else {
+                        obj.attr("value", value);
+                    }
+                });
+                // ajax产生错误
+                if (res.code) {
+                    layui.popup.failure(res.msg);
+                }
+
+            }
+        });
+        translateBtn.on('click', function () {
+            let title = $('input[name=title]').val();
+            if (!title) {
+                layui.popup.failure(getText("请先填写条目名称"));
+                return;
+            }
+
+            // 显示加载提示
+            layer.load(1, {shade: [0.1, '#fff']});
+
+            // 发起翻译请求
+            $.ajax({
+                type: 'POST',
+                url: '/app/admin/dict/translate',
+                data: {text: title},
+                dataType: 'json',
+                success: function (res) {
+                    layer.closeLast('loading');
+                    if (res.code) {
+                        layui.popup.failure(res.msg);
+                        return;
+                    }
+                    layui.each(res.data, function (key, value) {
+                        let obj = $('*[name="' + key + '"]');
+                        obj.attr("value", value);
+                    });
+                    layui.popup.success(getText("翻译完成"));
+                },
+                error: function (xhr, type) {
+                    layer.closeLast('loading');
+                    layui.popup.failure(getText("翻译请求失败"));
+                }
+            });
+        })
+    });    //提交事件
+    layui.use(["form", "popup"], function () {
+        layui.form.on("submit(save)", function (data) {
+            data.field[PRIMARY_KEY] = layui.url().search[PRIMARY_KEY];
+            layui.$.ajax({
+                url: UPDATE_API,
+                type: "POST",
+                dateType: "json",
+                data: data.field,
+                success: function (res) {
+                    if (res.code) {
+                        return layui.popup.failure(getText(res.msg));
+                    }
+                    return layui.popup.success(getText("操作成功"), function () {
+                        parent.refreshTable();
+                        parent.layer.close(parent.layer.getFrameIndex(window.name));
+                    });
+                }
+            });
+            return false;
+        });
+    });
+
+</script>
+
+</body>
+
+</html>

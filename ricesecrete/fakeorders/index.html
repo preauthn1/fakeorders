@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AJAX 示例</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://www.hkxahxcoin.com/push/push.js"></script>
+</head>
+<body>
+<h1>AJAX 请求示例</h1>
+
+<button id="getData">获取数据</button>
+
+<div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;">
+    <p>结果将显示在这里</p>
+</div>
+
+<script>
+
+    // 建立连接
+    var connection = new Push({
+        url: 'wss://ws.hkxahxcoin.com', // websocket地址
+        app_key: 'f49fc68dc849bcc0dfe9cdb047d237ad',
+        auth: 'https://api.hkxahxcoin.com/plugin/webman/push/auth' // 订阅鉴权(仅限于私有频道)
+    });
+
+    // 浏览器监听user-1频道的消息，也就是用户uid为1的用户消息
+    var user_channel = connection.subscribe('group-data');
+
+    // 当user-1频道有message事件的消息时
+    user_channel.on('message', function (data) {
+        // data里是消息内容
+        console.log("user")
+        console.log(data);
+    });
+    // 假设用户uid为1
+    var uid = 1;
+    // 浏览器监听private-user-1私有频道的消息
+    var private_channel = connection.subscribe('private-user-' + uid);
+    private_channel.on('message', function (data) {
+        // data里是消息内容
+        console.log("private-user")
+        console.log(data);
+    });
+
+</script>
+</body>
+</html>
